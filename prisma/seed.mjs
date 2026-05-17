@@ -668,17 +668,15 @@ const PRODUCTS = [
     description: 'Enceinte Bluetooth portable JBL Flip 6, son puissant'
   },
   {
-    name: 'مصحح وضع الجسم للنساء والرجال', price: 2900, oldPrice: null,
-    slug: 'musahhih-wad-aljism',
+    name: 'جهاز ألعاب محمول صغير للأطفال - 400 لعبة كلاسيكية', price: 4900, oldPrice: null,
+    slug: 'jeu-portable-400-jeux',
     images: [
-      'https://ae01.alicdn.com/kf/Sc8bc03ed9c1b452c9eb26497df6017edS.jpg',
-      'https://ae01.alicdn.com/kf/S74b3cd0c723044fb9d940f079c69c33bq.jpg',
-      'https://ae01.alicdn.com/kf/Sec807987f94e4875822a8ef017af42a0G.jpg',
-      'https://ae01.alicdn.com/kf/Sa3ca5bcf17e74dfcbd744ceb89762501V.jpg',
-      'https://ae01.alicdn.com/kf/S755d33394d634c49a91709f4b87f0489P.jpg',
-      'https://ae01.alicdn.com/kf/Sed289e508622451c8b780802700a89dfu.jpg'
+      'https://ae01.alicdn.com/kf/S0a449d47d28443e88e8e7301b4409741s.jpg',
+      'https://ae01.alicdn.com/kf/S5a3ecf8554e749219e018e3f6ca094b6M.jpg',
+      'https://ae01.alicdn.com/kf/S0d6bf6778add4782b8bf7afc9dfb46acz.jpg',
+      'https://ae01.alicdn.com/kf/S1f90360579244243b48cbe2059701046Y.jpg'
     ],
-    description: 'مصحح وضع الجسم للنساء والرجال — حزام طبي قابل للتعديل لدعم الظهر وتصحيح القوام والتخفيف من آلام العمود الفقري. مناسب للاستخدام اليومي في المنزل والمكتب وأثناء الرياضة. مصنوع من مواد تنفس عالية الجودة تضمن الراحة طوال اليوم. يساعد على تحسين الوقفة وتقويم الكتفين وتخفيف الضغط على الفقرات.'
+    description: 'جهاز ألعاب محمول صغير الحجم للأطفال — يحتوي على 400 لعبة كلاسيكية مدمجة. قابل لإعادة الشحن عبر USB، تصميم كلاسيكي أحمر أنيق. مناسب للسفر والاستخدام اليومي، يعمل ببطارية مدمجة تدوم لساعات. هدية مثالية للأطفال.'
   },
 ];
 
