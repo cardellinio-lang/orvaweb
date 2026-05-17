@@ -32,6 +32,8 @@ export default function Admin() {
 
   const authHeaders = () => ({ 'Content-Type': 'application/json', 'x-admin-password': password });
 
+  const autoLogout = () => { sessionStorage.clear(); setLoggedIn(false); setPassword(''); setTab('products'); };
+
   const handleLogin = async () => {
     setLoginLoading(true);
     setLoginError(false);
@@ -60,6 +62,7 @@ export default function Admin() {
     setWilayas(await w.json());
     const s = await fetch('/api/stats', { headers: authHeaders() });
     if (s.ok) setStats(await s.json());
+    else if (s.status === 401) autoLogout();
   };
 
   useEffect(() => { if (loggedIn) load(); }, [loggedIn]);
@@ -73,6 +76,7 @@ export default function Admin() {
       body: JSON.stringify(body),
     });
     if (!res.ok) {
+      if (res.status === 401) { alert('Session expirée. Reconnectez-vous.'); autoLogout(); setLoading(false); return; }
       const err = await res.json().catch(() => ({}));
       alert('Erreur: ' + (err.error || err.message || res.status));
       setLoading(false);
@@ -93,6 +97,7 @@ export default function Admin() {
   const remove = async (id) => {
     if (!confirm('Supprimer ce produit ?')) return;
     const r = await fetch(`/api/products/${id}`, { method: 'DELETE', headers: authHeaders() });
+    if (r.status === 401) { alert('Session expirée. Reconnectez-vous.'); autoLogout(); return; }
     if (!r.ok) return alert('Erreur : ' + (await r.json()).error);
     const data = await r.json();
     if (data.inactive) alert(data.message);
@@ -101,6 +106,7 @@ export default function Admin() {
 
   const toggleStatus = async (id, active) => {
     const r = await fetch(`/api/products/${id}`, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ active: !active }) });
+    if (r.status === 401) { alert('Session expirée. Reconnectez-vous.'); autoLogout(); return; }
     if (!r.ok) return alert('Erreur');
     load();
   };
@@ -170,18 +176,21 @@ export default function Admin() {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <button className={`btn ${tab === 'products' ? 'btn-primary' : ''}`} onClick={() => setTab('products')}>📦 Produits ({products.length})</button>
-        <button className={`btn ${tab === 'orders' ? 'btn-primary' : ''}`} onClick={() => setTab('orders')}>📋 Commandes ({orders.length})</button>
-        <button className={`btn ${tab === 'add' ? 'btn-primary' : ''}`} onClick={() => { setTab('add'); setForm({ name: '', price: '', oldPrice: '', images: [''], description: '', color: '#000000', category: '', sku: '', stock: '1', tierEnabled: false, tierQty: '', tierPrice: '', tierMessage: '', tierGift: '' }); setEditId(null); }}>
-          {editId ? '✏️ Modifier' : '➕ Ajouter'}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className={`btn ${tab === 'products' ? 'btn-primary' : ''}`} onClick={() => setTab('products')}>📦 Produits ({products.length})</button>
+          <button className={`btn ${tab === 'orders' ? 'btn-primary' : ''}`} onClick={() => setTab('orders')}>📋 Commandes ({orders.length})</button>
+          <button className={`btn ${tab === 'add' ? 'btn-primary' : ''}`} onClick={() => { setTab('add'); setForm({ name: '', price: '', oldPrice: '', images: [''], description: '', color: '#000000', category: '', sku: '', stock: '1', tierEnabled: false, tierQty: '', tierPrice: '', tierMessage: '', tierGift: '' }); setEditId(null); }}>
+            {editId ? '✏️ Modifier' : '➕ Ajouter'}
+          </button>
+          <button className={`btn ${tab === 'sync' ? 'btn-primary' : ''}`} onClick={() => setTab('sync')}>📊 Google Sheets</button>
+          <button className={`btn ${tab === 'stats' ? 'btn-primary' : ''}`} onClick={() => { setTab('stats'); if (!stats) load(); }}>📊 Stats</button>
+          <button className={`btn ${tab === 'delivery' ? 'btn-primary' : ''}`} onClick={() => setTab('delivery')}>🚚 Livraison</button>
+        </div>
+        <button className="btn btn-ghost" style={{ border: '1px solid #ddd' }} onClick={() => { sessionStorage.clear(); setLoggedIn(false); setPassword(''); }}>
+          🚪 Déconnexion
         </button>
-        <button className={`btn ${tab === 'sync' ? 'btn-primary' : ''}`} onClick={() => setTab('sync')}>📊 Google Sheets</button>
-        <button className={`btn ${tab === 'stats' ? 'btn-primary' : ''}`} onClick={() => { setTab('stats'); if (!stats) load(); }}>📊 Stats</button>
-        <button className={`btn ${tab === 'delivery' ? 'btn-primary' : ''}`} onClick={() => setTab('delivery')}>🚚 Livraison</button>
       </div>
-
-      {tab === 'products' && (
         <div className="card" style={{ overflowX: 'auto' }}>
           {selected.length > 0 && (
             <div className="flex" style={{ gap: 8, marginBottom: 12, padding: '8px 12px', background: '#fef2f2', borderRadius: 10, alignItems: 'center' }}>
