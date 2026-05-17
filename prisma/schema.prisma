@@ -7,6 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model PageView {
+  id    Int      @id @default(autoincrement())
+  date  DateTime @default(now())
+  path  String   @default("/")
+  count Int      @default(1)
+}
+
 model Product {
   id          String      @id @default(cuid())
   name        String
@@ -16,9 +23,15 @@ model Product {
   images      String      @default("[]")
   description String      @default("")
   color       String      @default("#000000")
+  category    String      @default("")
   sku         String?
   stock       Int         @default(1)
   active      Boolean     @default(true)
+  tierEnabled Boolean     @default(false)
+  tierQty     Int?
+  tierPrice   Int?
+  tierMessage String?
+  tierGift    String?
   createdAt   DateTime    @default(now())
   orders      OrderItem[]
 }

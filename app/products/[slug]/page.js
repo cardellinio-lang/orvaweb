@@ -9,5 +9,6 @@ export default async function ProductPage({ params }) {
   if (!product || !product.active) notFound();
   product.images = JSON.parse(product.images || '[]');
   const wilayas = await prisma.wilaya.findMany({ orderBy: { id: 'asc' } });
-  return <ProductClient product={product} wilayas={JSON.parse(JSON.stringify(wilayas))} />;
+  const communes = await prisma.commune.findMany({ orderBy: [{ wilayaId: 'asc' }, { name: 'asc' }] });
+  return <ProductClient product={product} wilayas={JSON.parse(JSON.stringify(wilayas))} communes={JSON.parse(JSON.stringify(communes))} />;
 }

@@ -2,39 +2,100 @@ import prisma from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+function ProductCard({ p, now, weekMs }) {
+  const imgs = JSON.parse(p.images || '[]');
+  const discount = p.oldPrice ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
+  const isNew = now - new Date(p.createdAt).getTime() < weekMs;
+  const c = p.color || '#000000';
+  const hasTier = p.tierEnabled && p.tierQty && p.tierPrice;
+  return (
+    <a key={p.id} href={`/products/${p.slug}`}
+       style={{
+         display: 'flex', flexDirection: 'column', background: '#fff',
+         borderRadius: 16, overflow: 'hidden', textDecoration: 'none',
+         boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+         transition: 'transform 0.2s, box-shadow 0.2s',
+       }}>
+      <div style={{ position: 'relative', aspectRatio: '1', background: '#f5f5f7', overflow: 'hidden' }}>
+        <img src={imgs[0] || 'https://placehold.co/400x400/f5f5f7/8e8e93?text=P'}
+             alt={p.name}
+             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        {discount > 0 && (
+          <span style={{ position: 'absolute', top: 8, right: 8, background: c, color: '#fff', fontSize: 11, fontWeight: 900, padding: '4px 10px', borderRadius: 20 }}>
+            -{discount}%
+          </span>
+        )}
+        {isNew && (
+          <span style={{ position: 'absolute', top: 8, left: 8, background: '#ffd700', color: '#1d1d1f', fontSize: 10, fontWeight: 800, padding: '4px 8px', borderRadius: 20 }}>
+            جديد
+          </span>
+        )}
+        {hasTier && (
+          <span style={{ position: 'absolute', bottom: 8, left: 8, background: '#16a34a', color: '#fff', fontSize: 10, fontWeight: 800, padding: '4px 8px', borderRadius: 20 }}>
+            كمّية
+          </span>
+        )}
+      </div>
+      <div style={{ padding: '12px 12px 16px', display: 'flex', flexDirection: 'column', gap: 6, textAlign: 'center' }}>
+        <h3 style={{ fontSize: 15, fontWeight: 800, lineHeight: 1.4, color: '#1d1d1f' }}>{p.name}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <span style={{ fontSize: 22, fontWeight: 900, color: c }}>
+            {p.price.toLocaleString()} <span style={{ fontSize: 13 }}>د.ج</span>
+          </span>
+          {p.oldPrice && (
+            <span style={{ fontSize: 14, color: '#8e8e93', textDecoration: 'line-through' }}>{p.oldPrice.toLocaleString()}</span>
+          )}
+        </div>
+        {hasTier && (
+          <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 700 }}>أقل سعر {p.tierPrice.toLocaleString()} د.ج عند شراء {p.tierQty}+</span>
+        )}
+      </div>
+    </a>
+  );
+}
+
 export default async function Home() {
   const products = await prisma.product.findMany({ where: { active: true }, orderBy: { createdAt: 'desc' } });
+  const now = Date.now();
+  const weekMs = 7 * 24 * 60 * 60 * 1000;
+
+  const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+  const grouped = categories.map(cat => ({ name: cat, products: products.filter(p => p.category === cat) }));
+  const uncategorized = products.filter(p => !p.category);
 
   return (
     <div>
-      <div style={{ textAlign: 'center', marginBottom: 20 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>تسوق الآن</h1>
-        <p style={{ color: '#8e8e93', marginTop: 4, fontSize: 15 }}>الدفع عند الاستلام • التوصيل إلى 58 ولاية</p>
+      {/* Hero section */}
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 900, marginBottom: 6 }}>تسوق الآن</h1>
+        <p style={{ color: '#8e8e93', fontSize: 14 }}>الدفع عند الاستلام • التوصيل إلى 58 ولاية</p>
       </div>
 
-      <div className="grid">
-        {products.map(p => {
-          const imgs = JSON.parse(p.images || '[]');
-          const discount = p.oldPrice ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
-          return (
-            <a key={p.id} href={`/products/${p.slug}`}
-               style={{ display: 'block', background: '#fff', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
-              <div style={{ aspectRatio: '1', background: '#f5f5f7', overflow: 'hidden' }}>
-                <img src={imgs[0] || 'https://placehold.co/400x400/f5f5f7/8e8e93?text=N'} alt={p.name}
-                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <div style={{ padding: 12 }}>
-                {discount > 0 && <span style={{ display: 'inline-block', background: '#000', color: '#fff', fontSize: 10, padding: '2px 8px', borderRadius: 20, fontWeight: 600, marginBottom: 4 }}>-{discount}%</span>}
-                <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, lineHeight: 1.3 }}>{p.name}</h3>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 4 }}>
-                  <span style={{ fontSize: 17, fontWeight: 800, color: '#000' }}>{p.price.toLocaleString()} د.ج</span>
-                  {p.oldPrice && <span style={{ fontSize: 12, color: '#8e8e93', textDecoration: 'line-through' }}>{p.oldPrice.toLocaleString()} د.ج</span>}
-                </div>
-              </div>
-            </a>
-          );
-        })}
-      </div>
+      {/* Products by category */}
+      {grouped.map(cat => (
+        <div key={cat.name} style={{ marginBottom: 28 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 14, paddingRight: 4 }}>{cat.name}</h2>
+          <div className="grid">
+            {cat.products.map(p => <ProductCard key={p.id} p={p} now={now} weekMs={weekMs} />)}
+          </div>
+        </div>
+      ))}
+
+      {/* Uncategorized */}
+      {uncategorized.length > 0 && (
+        <div style={{ marginBottom: 28 }}>
+          {grouped.length > 0 && <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 14, paddingRight: 4 }}>Tous les produits</h2>}
+          <div className="grid">
+            {uncategorized.map(p => <ProductCard key={p.id} p={p} now={now} weekMs={weekMs} />)}
+          </div>
+        </div>
+      )}
+
+      {products.length === 0 && (
+        <div style={{ textAlign: 'center', padding: 60, color: '#8e8e93' }}>
+          لا توجد منتجات حالياً
+        </div>
+      )}
     </div>
   );
 }

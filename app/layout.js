@@ -1,8 +1,9 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'MegaStore DZ',
+  title: 'ibishop',
   description: 'Achetez vos produits préférés, livraison partout en Algérie',
+  icons: { icon: '/favicon.png', shortcut: '/favicon.png' },
 };
 
 export default function RootLayout({ children }) {
@@ -32,7 +33,7 @@ export default function RootLayout({ children }) {
         )}
       </head>
       <body>
-        <div style={{ background: '#000', color: '#fff', padding: '14px 16px', textAlign: 'center', fontWeight: 800, fontSize: 17, marginBottom: 16 }}>
+        <div style={{ background: '#f5f5f7', color: '#1d1d1f', padding: '14px 16px', textAlign: 'center', fontWeight: 800, fontSize: 17, marginBottom: 16, borderBottom: '1px solid #e8e8ed' }}>
           <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <a href="/" style={{ fontWeight: 800, fontSize: 20 }}>المنتجات</a>
             <a href="/"><img src="/logo-ibikids.png" alt="ibikids" style={{ height: 28 }} /></a>
@@ -44,6 +45,7 @@ export default function RootLayout({ children }) {
         <footer style={{ textAlign: 'center', padding: 20, color: '#8e8e93', fontSize: 13, borderTop: '1px solid #e8e8ed' }}>
           ibishop-2026
         </footer>
+        <script dangerouslySetInnerHTML={{ __html: `fetch('/api/pageview',{method:'POST'}).catch(()=>{})` }} />
       </body>
     </html>
   );

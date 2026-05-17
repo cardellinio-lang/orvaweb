@@ -1,8 +1,17 @@
 import prisma from '@/lib/db';
+import { sendAdminNotification } from '@/lib/telegram';
+import { waitUntil } from '@vercel/functions';
 
 export async function GET() {
-  const orders = await prisma.order.findMany({ orderBy: { createdAt: 'desc' }, include: { items: true } });
-  return Response.json(orders);
+  const orders = await prisma.order.findMany({
+    orderBy: { createdAt: 'desc' }, include: { items: true },
+  });
+  const enriched = await Promise.all(orders.map(async o => {
+    const wilaya = await prisma.wilaya.findUnique({ where: { id: o.wilayaId } });
+    const commune = await prisma.commune.findUnique({ where: { id: o.communeId } });
+    return { ...o, wilayaName: wilaya?.name || '', communeName: commune?.name || '' };
+  }));
+  return Response.json(enriched);
 }
 
 export async function POST(req) {
@@ -35,6 +44,18 @@ export async function POST(req) {
   });
 
   await prisma.product.update({ where: { id: product.id }, data: { stock: product.stock - data.qty } });
+
+  // Telegram notification (waitUntil = s'exécute après la réponse, Vercel ne coupe pas)
+  const commune = await prisma.commune.findUnique({ where: { id: data.communeId } });
+  waitUntil(sendAdminNotification({
+    product: product.name, qty: data.qty, price: product.price,
+    customer: data.customer, phone: data.phone,
+    wilaya: wilaya.name, commune: commune?.name || '',
+    address: data.address,
+    deliveryType: data.deliveryType || 'home',
+    deliveryPrice,
+    total,
+  }));
 
   const sheetUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
   if (sheetUrl) {

@@ -1,10 +1,22 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID;
 
-export default function ProductClient({ product, wilayas }) {
+const WILAYA_AR = {
+  1:'أدرار',2:'الشلف',3:'الأغواط',4:'أم البواقي',5:'باتنة',6:'بجاية',7:'بسكرة',8:'بشار',
+  9:'البليدة',10:'البويرة',11:'تمنراست',12:'تبسة',13:'تلمسان',14:'تيارت',15:'تيزي وزو',
+  16:'الجزائر',17:'الجلفة',18:'جيجل',19:'سطيف',20:'سعيدة',21:'سكيكدة',22:'سيدي بلعباس',
+  23:'عنابة',24:'قالمة',25:'قسنطينة',26:'المدية',27:'مستغانم',28:'المسيلة',29:'معسكر',
+  30:'ورقلة',31:'وهران',32:'البيض',33:'إيليزي',34:'برج بوعريريج',35:'بومرداس',
+  36:'الطارف',37:'تندوف',38:'تسمسيلت',39:'الوادي',40:'خنشلة',41:'سوق أهراس',
+  42:'تيبازة',43:'ميلة',44:'عين الدفلى',45:'النعامة',46:'عين تموشنت',47:'غرداية',
+  48:'غليزان',49:'تيميمون',50:'برج باجي مختار',51:'أولاد جلال',52:'بني عباس',
+  53:'عين صالح',54:'عين قزام',55:'تقرت',56:'جانت',57:'المغير',58:'المنيعة',
+};
+
+export default function ProductClient({ product, wilayas, communes}) {
   const c = product.color || '#000000';
   const [imgIdx, setImgIdx] = useState(0);
   const [qty, setQty] = useState(1);
@@ -12,14 +24,16 @@ export default function ProductClient({ product, wilayas }) {
   const [phone, setPhone] = useState('');
   const [wilayaId, setWilayaId] = useState('');
   const [communeId, setCommuneId] = useState('');
-  const [communes, setCommunes] = useState([]);
   const [address, setAddress] = useState('');
   const [deliveryType, setDeliveryType] = useState('home');
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  const [celebration, setCelebration] = useState(null);
   const formRef = useRef(null);
+  const prevTierRef = useRef(false);
+  const audioCtxRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 400);
@@ -36,20 +50,33 @@ export default function ProductClient({ product, wilayas }) {
     }
   }, []);
 
+  const tierActive = product.tierEnabled && product.tierQty && product.tierPrice && qty >= product.tierQty;
+  const effectivePrice = tierActive ? product.tierPrice : product.price;
   const selectedWilaya = wilayas.find(w => w.id === Number(wilayaId));
   const delivery = selectedWilaya ? (deliveryType === 'office' ? selectedWilaya.priceOffice : selectedWilaya.price) : 0;
-  const subtotal = product.price * qty;
+  const subtotal = effectivePrice * qty;
   const total = subtotal + delivery;
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
+  const savings = product.tierEnabled && product.tierPrice ? product.price - product.tierPrice : 0;
   const imgs = Array.isArray(product.images) ? product.images : [];
 
-  const handleWilayaChange = async (id) => {
+  const filteredCommunes = wilayaId ? communes.filter(c => c.wilayaId === Number(wilayaId)) : [];
+
+  // Celebration overlay — déclenché une fois quand le palier est atteint
+  useEffect(() => {
+    if (product.tierEnabled && tierActive && !prevTierRef.current) {
+      prevTierRef.current = true;
+      setCelebration({ savings, tierQty: product.tierQty, tierPrice: product.tierPrice, price: product.price });
+      const timer = setTimeout(() => setCelebration(null), 3500);
+      return () => clearTimeout(timer);
+    } else if (!tierActive) {
+      prevTierRef.current = false;
+    }
+  }, [tierActive, product.tierEnabled, savings, product.tierQty, product.tierPrice, product.price]);
+
+  const handleWilayaChange = (id) => {
     setWilayaId(id);
     setCommuneId('');
-    if (id) {
-      const res = await fetch(`/api/wilayas/${id}/communes`);
-      setCommunes(await res.json());
-    } else setCommunes([]);
   };
 
   const submitOrder = async () => {
@@ -86,14 +113,43 @@ export default function ProductClient({ product, wilayas }) {
   };
 
   if (done) {
-    return <Confirmation />;
+    return <Confirmation product={product} qty={qty} total={total} />;
   }
 
   return (
     <div>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes fadeInUp {
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+          0%,100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+        @keyframes giftBounce {
+          0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+          40% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+          60% { transform: scale(0.95) rotate(-3deg); }
+          80% { transform: scale(1.05) rotate(2deg); }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes lidOpen {
+          0% { transform: translateY(0) rotate(0); }
+          100% { transform: translateY(-60px) rotate(-10deg); opacity: 0; }
+        }
+        @keyframes particleFly {
+          0% { transform: translate(0,0) scale(1); opacity: 1; }
+          100% { transform: translate(var(--px),var(--py)) scale(0); opacity: 0; }
+        }
+        @keyframes shimmerText {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+      `}} />
       {/* COD Banner */}
       <div style={{ background: c, color: '#fff', borderRadius: 0, padding: '14px 20px', textAlign: 'center', fontWeight: 900, fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
-        <img src="/moto-icon.jpg" alt="" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+        <img src="/moto-icon.png" alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />
         الدفع عند الاستلام
       </div>
 
@@ -122,22 +178,35 @@ export default function ProductClient({ product, wilayas }) {
 
         {/* Right column - Product info + Form */}
         <div style={{ flex: '1 1 50%', minWidth: 0, width: '100%' }}>
-          <div style={{ background: '#fff', border: '1px solid #e5e5ea', boxShadow: '0 8px 40px rgba(0,0,0,0.08)' }}>
+          <div style={{ position: 'sticky', top: 80, background: '#fff', border: '1px solid #e5e5ea', boxShadow: '0 8px 40px rgba(0,0,0,0.08)' }}>
             <div style={{ height: 4, background: '#e5e5ea' }} />
             <div style={{ textAlign: 'center', padding: '16px 20px 0' }}>
               <img src="/logo-ibikids.png" alt="ibikids" style={{ height: 28, display: 'block', margin: '0 auto 12px' }} />
             {/* Product title & price */}
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center', position: 'relative' }}>
               <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8, lineHeight: 1.3, color: '#1d1d1f' }}>{product.name}</h1>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
                 {product.oldPrice && <span style={{ fontSize: 16, color: '#8e8e93', textDecoration: 'line-through' }}>{product.oldPrice.toLocaleString()} د.ج</span>}
-                <span style={{ fontSize: 28, fontWeight: 800, color: c }}>{product.price.toLocaleString()} <span style={{ fontSize: 16 }}>د.ج</span></span>
+                <span style={{
+                  fontSize: 28, fontWeight: 800, color: tierActive ? '#16a34a' : c,
+                  transition: 'transform 0.3s, color 0.3s',
+                }}>
+                  {effectivePrice.toLocaleString()} <span style={{ fontSize: 16 }}>د.ج</span>
+                </span>
+                {tierActive && product.price !== effectivePrice && (
+                  <span style={{ fontSize: 14, color: '#8e8e93', textDecoration: 'line-through' }}>{product.price.toLocaleString()}</span>
+                )}
               </div>
-              {discount > 0 && <span style={{ display: 'inline-block', background: c, color: '#fff', fontSize: 11, padding: '3px 10px', borderRadius: 20, fontWeight: 800, marginTop: 8 }}>خصم {discount}%</span>}
+              {discount > 0 && !tierActive && <span style={{ display: 'inline-block', background: c, color: '#fff', fontSize: 11, padding: '3px 10px', borderRadius: 20, fontWeight: 800, marginTop: 8 }}>خصم {discount}%</span>}
+              {tierActive && savings > 0 && (
+                <span style={{ display: 'inline-block', background: '#16a34a', color: '#fff', fontSize: 13, padding: '6px 16px', borderRadius: 20, fontWeight: 900, marginTop: 8 }}>
+                  ✅ توفير {savings.toLocaleString()} د.ج لكل قطعة!
+                </span>
+              )}
               {product.description && <p style={{ color: '#6e6e73', marginTop: 12, fontSize: 14, lineHeight: 1.6 }}>{product.description}</p>}
             </div>
 
-            <form ref={formRef} onSubmit={e => { e.preventDefault(); submitOrder(); }} style={{ padding: '0 20px 20px' }}>
+            <form ref={formRef} data-order-form onSubmit={e => { e.preventDefault(); submitOrder(); }} style={{ padding: '0 20px 20px' }}>
               {/* Name */}
               <div style={{ marginBottom: 16 }}>
                 <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>الاسم الكامل</label>
@@ -165,7 +234,7 @@ export default function ProductClient({ product, wilayas }) {
                 <select value={wilayaId} onChange={e => handleWilayaChange(e.target.value)}
                         style={{ width: '100%', padding: '12px 16px', border: '1.5px solid #d2d2d7', borderRadius: 12, fontSize: 16, background: '#fff', appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%236e6e73\' stroke-width=\'2.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'left 14px center', paddingLeft: 40 }}>
                   <option value="">اختر الولاية</option>
-                  {wilayas.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                  {wilayas.map(w => <option key={w.id} value={w.id}>{WILAYA_AR[w.id] || w.name} / {w.name}</option>)}
                 </select>
               </div>
 
@@ -175,29 +244,40 @@ export default function ProductClient({ product, wilayas }) {
                 <select value={communeId} onChange={e => setCommuneId(e.target.value)} disabled={!wilayaId}
                         style={{ width: '100%', padding: '12px 16px', border: '1.5px solid #d2d2d7', borderRadius: 12, fontSize: 16, background: '#fff', opacity: wilayaId ? 1 : 0.5, appearance: 'none', backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%236e6e73\' stroke-width=\'2.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'left 14px center', paddingLeft: 40 }}>
                   <option value="">اختر البلدية</option>
-                  {communes.map((c, i) => <option key={c.id || i} value={c.id}>{c.name}</option>)}
+                  {filteredCommunes.map((c, i) => <option key={c.id || i} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
 
-              {/* Quantity cards */}
+              {/* Quantity - + */}
               <div style={{ marginBottom: 16 }}>
                 <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>الكمية</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {[1, 2, 3].map(n => {
-                    const itemTotal = product.price * n;
-                    const selected = qty === n;
-                    return (
-                      <button key={n} type="button" onClick={() => setQty(n)}
-                              style={{ flex: 1, padding: '10px 8px', borderRadius: 14, border: selected ? '2px solid ' + c : '2px solid #e8e8ed', background: selected ? '#f5f5f5' : '#fff', cursor: 'pointer', textAlign: 'center', transition: 'all .15s' }}>
-                        <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 4 }}>{n}</div>
-                        <div style={{ background: selected ? c : '#f5f5f7', color: selected ? '#fff' : '#1d1d1f', padding: '4px 8px', borderRadius: 20, fontWeight: 800, fontSize: 12, display: 'inline-block' }}>
-                          {itemTotal.toLocaleString()} د.ج
-                        </div>
-                      </button>
-                    );
-                  })}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <button type="button" onClick={() => setQty(Math.max(1, qty - 1))}
+                          style={{ width: 44, height: 44, borderRadius: 12, border: '1.5px solid #d2d2d7', background: '#fff', fontSize: 22, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1d1d1f' }}>
+                    −
+                  </button>
+                  <div style={{ fontSize: 22, fontWeight: 900, minWidth: 40, textAlign: 'center', color: '#1d1d1f' }}>{qty}</div>
+                  <button type="button" onClick={() => setQty(qty + 1)}
+                          style={{ width: 44, height: 44, borderRadius: 12, border: '1.5px solid #d2d2d7', background: '#fff', fontSize: 22, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1d1d1f' }}>
+                    +
+                  </button>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: tierActive ? '#16a34a' : c }}>× {effectivePrice.toLocaleString()} د.ج</div>
                 </div>
               </div>
+
+              {/* Tier message + Gift */}
+              {product.tierEnabled && product.tierQty && qty < product.tierQty && (
+                <div style={{ background: '#fefce8', borderRadius: 12, padding: '12px 16px', marginBottom: 16, textAlign: 'center' }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#92400e' }}>
+                    {(product.tierMessage || `➕ أضف {remaining} فقط ووفر ${savings.toLocaleString()} د.ج لكل قطعة!`).replace(/\{remaining\}/g, product.tierQty - qty)}
+                  </span>
+                </div>
+              )}
+              {tierActive && product.tierGift && (
+                <div style={{ background: '#f0fdf4', borderRadius: 12, padding: '12px 16px', marginBottom: 16, textAlign: 'center', animation: 'fadeInUp 0.5s ease-out' }}>
+                  <span style={{ fontSize: 15, fontWeight: 900, color: '#16a34a' }}>🎁 هدية: {product.tierGift}</span>
+                </div>
+              )}
 
               {/* Delivery type */}
               <div style={{ marginBottom: 16 }}>
@@ -205,12 +285,12 @@ export default function ProductClient({ product, wilayas }) {
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button type="button" onClick={() => setDeliveryType('home')}
                           style={{ flex: 1, padding: '14px 8px', borderRadius: 14, border: deliveryType === 'home' ? '2px solid ' + c : '2px solid #e8e8ed', background: deliveryType === 'home' ? c : '#fff', color: deliveryType === 'home' ? '#fff' : '#1d1d1f', cursor: 'pointer', textAlign: 'center', transition: 'all .2s' }}>
-                    <img src="/home-icon.jpg" alt="" style={{ width: 26, height: 26, objectFit: 'contain', display: 'block', margin: '0 auto 4px' }} />
+                    <img src="/home-icon.svg" alt="" style={{ width: 22, height: 22 }} />
                     <span style={{ fontSize: 13, fontWeight: 800 }}>التوصيل إلى المنزل</span>
                   </button>
                   <button type="button" onClick={() => setDeliveryType('office')}
                           style={{ flex: 1, padding: '14px 8px', borderRadius: 14, border: deliveryType === 'office' ? '2px solid ' + c : '2px solid #e8e8ed', background: deliveryType === 'office' ? c : '#fff', color: deliveryType === 'office' ? '#fff' : '#1d1d1f', cursor: 'pointer', textAlign: 'center', transition: 'all .2s' }}>
-                    <img src="/office-icon.jpg" alt="" style={{ width: 26, height: 26, objectFit: 'contain', display: 'block', margin: '0 auto 4px' }} />
+                    <img src="/office-icon.svg" alt="" style={{ width: 22, height: 22 }} />
                     <span style={{ fontSize: 13, fontWeight: 800 }}>التوصيل إلى المكتب</span>
                   </button>
                 </div>
@@ -231,7 +311,10 @@ export default function ProductClient({ product, wilayas }) {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px dashed #d2d2d7' }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: '#1d1d1f' }}>سعر المنتج</span>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#6e6e73' }}>{product.price.toLocaleString()} د.ج</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: tierActive ? '#16a34a' : '#6e6e73' }}>
+                      {effectivePrice.toLocaleString()} د.ج
+                      {tierActive && <span style={{ fontSize: 12, color: '#8e8e93', textDecoration: 'line-through', marginLeft: 6 }}>{product.price.toLocaleString()}</span>}
+                    </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px dashed #d2d2d7' }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: '#1d1d1f' }}>الكمية</span>
@@ -267,20 +350,252 @@ export default function ProductClient({ product, wilayas }) {
         </div>
       )}
 
-      {/* Sticky bottom button */}
+      {/* Sticky bottom button — scrolls to form */}
       {scrolled && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '12px 16px', background: '#fff', borderTop: '1px solid #e8e8ed', zIndex: 100, boxShadow: '0 -4px 20px rgba(0,0,0,0.08)' }}>
-          <button onClick={() => formRef.current?.querySelector('button[type="submit"]')?.click()}
+          <button onClick={() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                   style={{ width: '100%', padding: '16px 24px', background: c, color: '#fff', fontSize: 20, fontWeight: 900, borderRadius: 14, border: 'none', cursor: 'pointer' }}>
             اطلب الآن
           </button>
         </div>
       )}
+
+      {/* Celebration overlay */}
+      {celebration && <CelebrationOverlay data={celebration} onClose={() => setCelebration(null)} />}
     </div>
   );
 }
 
-function Confirmation() {
+function CelebrationOverlay({ data, onClose }) {
+  const canvasRef = useRef(null);
+  const audioCtxRef = useRef(null);
+  const savingAmt = data.price - data.tierPrice;
+
+  useEffect(() => {
+    if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = audioCtxRef.current;
+    ctx.resume().then(() => {
+      const now = ctx.currentTime;
+      const fanfare = [
+        { notes: [261.63, 329.63, 392.00], time: 0, dur: 0.5 },
+        { notes: [329.63, 415.30, 493.88], time: 0.3, dur: 0.5 },
+        { notes: [392.00, 493.88, 587.33], time: 0.6, dur: 0.5 },
+        { notes: [523.25, 659.25, 783.99], time: 0.9, dur: 0.8 },
+        { notes: [659.25, 830.61, 987.77], time: 1.2, dur: 0.8 },
+        { notes: [783.99, 987.77, 1174.66], time: 1.5, dur: 1.0 },
+      ];
+      fanfare.forEach(({ notes, time, dur }) => {
+        notes.forEach(freq => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.15, now + time);
+          gain.gain.linearRampToValueAtTime(0.25, now + time + 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + time + dur);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + time);
+          osc.stop(now + time + dur);
+        });
+      });
+      [1318.5, 1568.0, 1760.0, 1975.5].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.08, now + 1.0 + i * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.0 + i * 0.12 + 0.4);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + 1.0 + i * 0.12);
+        osc.stop(now + 1.0 + i * 0.12 + 0.4);
+      });
+      const bass = ctx.createOscillator();
+      const bassGain = ctx.createGain();
+      bass.type = 'sine';
+      bass.frequency.setValueAtTime(65.41, now);
+      bass.frequency.exponentialRampToValueAtTime(32.70, now + 0.5);
+      bassGain.gain.setValueAtTime(0.4, now);
+      bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      bass.connect(bassGain);
+      bassGain.connect(ctx.destination);
+      bass.start(now);
+      bass.stop(now + 0.6);
+    }).catch(() => {});
+  }, []);
+
+  // Canvas confetti
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    canvas.width = parent.offsetWidth;
+    canvas.height = parent.offsetHeight;
+
+    const colors = ['#ff6b35','#ffaa00','#ffd700','#ff3b6f','#a855f7','#22c55e','#f50','#48dbfb'];
+    let pieces = [];
+
+    for (let i = 0; i < 100; i++) {
+      pieces.push({
+        x: Math.random() * canvas.width,
+        y: -10 - Math.random() * 60,
+        w: 4 + Math.random() * 8,
+        h: 4 + Math.random() * 8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 5,
+        vy: 2 + Math.random() * 4,
+        rot: Math.random() * 360,
+        rotV: (Math.random() - 0.5) * 10,
+        gravity: 0.06 + Math.random() * 0.04,
+        opacity: 1,
+      });
+    }
+
+    const ctx2d = canvas.getContext('2d');
+    let animId;
+
+    function draw() {
+      ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+      pieces = pieces.filter(p => {
+        p.x += p.vx;
+        p.vy += p.gravity;
+        p.y += p.vy;
+        p.rot += p.rotV;
+        p.opacity -= 0.004;
+        ctx2d.save();
+        ctx2d.translate(p.x, p.y);
+        ctx2d.rotate((p.rot * Math.PI) / 180);
+        ctx2d.globalAlpha = Math.max(0, p.opacity);
+        ctx2d.fillStyle = p.color;
+        ctx2d.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx2d.restore();
+        return p.opacity > 0 && p.y < canvas.height + 20;
+      });
+      if (pieces.length > 0) animId = requestAnimationFrame(draw);
+    }
+    draw();
+    return () => { if (animId) cancelAnimationFrame(animId); };
+  }, []);
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      cursor: 'pointer',
+    }}>
+      <style>{`
+        @keyframes wowBadgePop {
+          0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+          60% { transform: scale(1.18) rotate(3deg); opacity: 1; }
+          80% { transform: scale(0.95) rotate(-2deg); }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes wowFloatUp {
+          0% { opacity: 0; transform: translateY(30px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes wowShimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes wowSpark {
+          0% { transform: translate(0,0) scale(1); opacity: 1; }
+          100% { transform: translate(var(--dx),var(--dy)) scale(0); opacity: 0; }
+        }
+      `}</style>
+
+      <canvas ref={canvasRef} style={{
+        position: 'absolute', inset: 0, width: '100%', height: '100%',
+        pointerEvents: 'none', zIndex: 1,
+      }} />
+
+      {/* Sparks */}
+      {[...Array(30)].map((_, i) => {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 60 + Math.random() * 120;
+        const size = 3 + Math.random() * 6;
+        const colors = ['#ff6b35','#ffaa00','#ffd700','#ff3b6f','#a855f7','#22c55e','#fff'];
+        return (
+          <div key={i} style={{
+            position: 'absolute', left: '50%', top: '50%',
+            width: size, height: size,
+            borderRadius: '50%',
+            background: colors[i % colors.length],
+            animation: `wowSpark ${0.6 + Math.random() * 0.6}s ease-out forwards`,
+            animationDelay: `${0.1 + Math.random() * 0.3}s`,
+            opacity: 0,
+            zIndex: 2,
+            '--dx': `${Math.cos(angle) * dist}px`,
+            '--dy': `${Math.sin(angle) * dist}px`,
+            pointerEvents: 'none',
+          }} />
+        );
+      })}
+
+      <div onClick={e => e.stopPropagation()} style={{
+        position: 'relative', zIndex: 3, textAlign: 'center',
+        animation: 'wowBadgePop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+      }}>
+        {/* Badge */}
+        <div style={{
+          display: 'inline-block',
+          background: 'linear-gradient(135deg, #ff6b35, #f50)',
+          color: '#fff',
+          borderRadius: 100,
+          padding: '20px 40px',
+          boxShadow: '0 8px 40px rgba(255,85,0,0.5)',
+          marginBottom: 16,
+        }}>
+          <div style={{
+            fontSize: 28, fontWeight: 900, lineHeight: 1.2,
+            background: 'linear-gradient(90deg, #ffd700, #fff, #ffd700)',
+            backgroundSize: '200% auto',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            animation: 'wowShimmer 1.5s linear infinite',
+          }}>
+            🎉 تم فتح العرض!
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 700, opacity: 0.9, marginTop: 4 }}>
+            {data.tierQty}+ بكمية
+          </div>
+        </div>
+
+        {/* Price info */}
+        <div style={{ animation: 'wowFloatUp 0.5s ease-out 0.3s both' }}>
+          <div style={{ color: '#ffd700', fontSize: 36, fontWeight: 900, marginBottom: 4 }}>
+            {data.tierPrice.toLocaleString()} <span style={{ fontSize: 18 }}>د.ج</span>
+            <span style={{ fontSize: 18, color: '#aaa', textDecoration: 'line-through', marginLeft: 10, fontWeight: 600 }}>
+              {data.price.toLocaleString()} د.ج
+            </span>
+          </div>
+          <div style={{ color: '#86efac', fontSize: 18, fontWeight: 700 }}>
+            وفر {savingAmt.toLocaleString()} د.ج لكل قطعة
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <span style={{
+              display: 'inline-block',
+              background: 'rgba(255,255,255,0.15)',
+              color: '#fff',
+              padding: '8px 24px',
+              borderRadius: 999,
+              fontSize: 14,
+              fontWeight: 700,
+              backdropFilter: 'blur(4px)',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}>
+              ✅ تم تطبيق العرض الترويجي
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Confirmation({ product, qty, total }) {
   const [showMsg, setShowMsg] = useState(false);
 
   useEffect(() => {
@@ -289,30 +604,39 @@ function Confirmation() {
       await audioCtx.resume();
       const now = audioCtx.currentTime;
 
-      [523.25, 659.25].forEach((freq, i) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.3, now + i * 0.15);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.6);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now + i * 0.15);
-        osc.stop(now + i * 0.15 + 0.6);
+      // Rich chord: C major → G major
+      const notes = [
+        [523.25, 659.25, 783.99],
+        [587.33, 739.99, 880.00],
+        [659.25, 830.61, 987.77],
+      ];
+      notes.forEach((chord, i) => {
+        chord.forEach((freq) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.25, now + i * 0.2);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.2 + 0.8);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + i * 0.2);
+          osc.stop(now + i * 0.2 + 0.8);
+        });
       });
 
-      [1200, 1400].forEach((freq, i) => {
+      // Sparkle on top
+      [1600, 1800, 2000].forEach((freq, i) => {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'triangle';
         osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.15, now + 0.3 + i * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3 + i * 0.08 + 0.3);
+        gain.gain.setValueAtTime(0.12, now + 0.6 + i * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6 + i * 0.1 + 0.4);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        osc.start(now + 0.3 + i * 0.08);
-        osc.stop(now + 0.3 + i * 0.08 + 0.3);
+        osc.start(now + 0.6 + i * 0.1);
+        osc.stop(now + 0.6 + i * 0.1 + 0.4);
       });
     };
     playChaChing().catch(() => {});
@@ -323,55 +647,76 @@ function Confirmation() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: 'linear-gradient(180deg, #14532d 0%, #166534 50%, #15803d 100%)',
+      minHeight: '100vh', background: 'linear-gradient(135deg, #0f4c2d 0%, #166534 40%, #15803d 70%, #16a34a 100%)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: 20, position: 'relative', overflow: 'hidden',
     }}>
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes confettiFall {
           0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(calc(100vh)) rotate(720deg); opacity: 0; }
+          100% { transform: translateY(calc(100vh + 100px)) rotate(720deg); opacity: 0; }
         }
         @keyframes pulse {
           0%,100% { transform: scale(1); }
           50% { transform: scale(1.05); }
         }
         @keyframes fadeInUp {
-          0% { transform: translateY(40px); opacity: 0; }
-          100% { transform: translateY(0); opacity: 1; }
+          0% { opacity: 0; transform: translateY(40px) scale(0.9); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .gold-confetti { position: absolute; animation: confettiFall 3s linear forwards; }
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        .gold-confetti { position: absolute; animation: confettiFall 3.5s ease-in forwards; }
       `}} />
 
-      {[...Array(30)].map((_, i) => (
+      {/* Confetti */}
+      {[...Array(40)].map((_, i) => (
         <div key={i} className="gold-confetti" style={{
-          background: ['#ffd700','#fbbf24','#f59e0b','#fff'][i % 4],
+          background: ['#ffd700','#fbbf24','#22c55e','#fff','#f59e0b','#10b981'][i % 6],
           left: `${Math.random() * 100}%`,
-          top: `${-10 - Math.random() * 20}px`,
-          animationDelay: `${Math.random() * 2}s`,
-          width: `${4 + Math.random() * 8}px`,
-          height: `${4 + Math.random() * 8}px`,
+          top: `${-10 - Math.random() * 30}px`,
+          animationDelay: `${Math.random() * 2.5}s`,
+          animationDuration: `${2.5 + Math.random() * 2}s`,
+          width: `${4 + Math.random() * 10}px`,
+          height: `${4 + Math.random() * 10}px`,
           borderRadius: Math.random() > 0.5 ? '50%' : '2px',
-          opacity: 0.8 + Math.random() * 0.2,
+          opacity: 0.7 + Math.random() * 0.3,
         }} />
       ))}
 
       {showMsg && (
         <div style={{ textAlign: 'center', animation: 'fadeInUp 0.8s ease-out' }}>
-          <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
-          <h1 style={{ fontSize: 36, fontWeight: 900, color: '#ffd700', marginBottom: 12, textShadow: '0 2px 12px rgba(255,215,0,0.3)' }}>
+          {/* Big checkmark */}
+          <div style={{
+            width: 100, height: 100, borderRadius: '50%', background: '#ffd700',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px', boxShadow: '0 0 60px rgba(255,215,0,0.5)',
+            animation: 'pulse 2s ease-in-out infinite',
+          }}>
+            <span style={{ fontSize: 50 }}>🎉</span>
+          </div>
+
+          <h1 style={{ fontSize: 38, fontWeight: 900, color: '#ffd700', marginBottom: 8, textShadow: '0 2px 16px rgba(255,215,0,0.3)' }}>
             شكراً لطلبك!
           </h1>
-          <p style={{ color: '#fef3c7', fontSize: 18, fontWeight: 700, lineHeight: 1.8, maxWidth: 340 }}>
+          <p style={{ color: '#fef3c7', fontSize: 17, fontWeight: 600, lineHeight: 1.8, maxWidth: 360, margin: '0 auto 8px' }}>
             سنقوم بالاتصال بك قريباً لتأكيد الطلبية
           </p>
-          <div style={{ marginTop: 28 }}>
+          <p style={{ color: '#86efac', fontSize: 14, fontWeight: 500 }}>
+            {product.name} x{qty} — {total.toLocaleString()} د.ج
+          </p>
+
+          {/* Action buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 28 }}>
             <a href="/"
-               style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                       background: '#ffd700', color: '#14532d', padding: '18px 48px',
-                       borderRadius: 14, fontWeight: 900, fontSize: 18,
-                       animation: 'pulse 2s ease-in-out infinite',
-                       textDecoration: 'none', boxShadow: '0 4px 20px rgba(255,215,0,0.4)' }}>
+               style={{
+                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                 background: 'rgba(255,255,255,0.15)', color: '#fff',
+                 padding: '14px 36px', borderRadius: 14, fontWeight: 700, fontSize: 16,
+                 textDecoration: 'none', backdropFilter: 'blur(4px)',
+               }}>
               العودة إلى المتجر
             </a>
           </div>
