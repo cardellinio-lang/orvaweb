@@ -21,6 +21,7 @@ export default function Admin() {
   const [deliverySaving, setDeliverySaving] = useState({});
   const [stats, setStats] = useState(null);
   const [orderFilter, setOrderFilter] = useState('all');
+  const [selected, setSelected] = useState([]);
 
   useEffect(() => {
     if (sessionStorage.getItem('admin_auth') === '1') {
@@ -94,6 +95,30 @@ export default function Admin() {
     load();
   };
 
+  const selectAll = (checked) => {
+    if (checked) setSelected(products.map(p => p.id));
+    else setSelected([]);
+  };
+
+  const toggleSelect = (id) => {
+    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const bulkDelete = async () => {
+    if (!selected.length) return;
+    if (!confirm(`Supprimer ${selected.length} produit(s) ?`)) return;
+    await Promise.all(selected.map(id => fetch(`/api/products/${id}`, { method: 'DELETE', headers: authHeaders() })));
+    setSelected([]);
+    load();
+  };
+
+  const bulkToggleStatus = async (active) => {
+    if (!selected.length) return;
+    await Promise.all(selected.map(id => fetch(`/api/products/${id}`, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ active }) })));
+    setSelected([]);
+    load();
+  };
+
   const setStatus = async (id, status) => {
     await fetch(`/api/orders/${id}`, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ status }) });
     load();
@@ -144,9 +169,18 @@ export default function Admin() {
 
       {tab === 'products' && (
         <div className="card" style={{ overflowX: 'auto' }}>
+          {selected.length > 0 && (
+            <div className="flex" style={{ gap: 8, marginBottom: 12, padding: '8px 12px', background: '#fef2f2', borderRadius: 10, alignItems: 'center' }}>
+              <span style={{ fontSize: 13, color: '#991b1b', fontWeight: 600 }}>{selected.length} sélectionné(s)</span>
+              <button className="btn btn-danger" style={{ padding: '6px 16px', fontSize: 13 }} onClick={bulkDelete}>🗑️ Tout supprimer</button>
+              <button className="btn btn-ghost" style={{ padding: '6px 16px', fontSize: 13, border: '1px solid #ddd' }} onClick={() => bulkToggleStatus(true)}>👀 Activer</button>
+              <button className="btn btn-ghost" style={{ padding: '6px 16px', fontSize: 13, border: '1px solid #ddd' }} onClick={() => bulkToggleStatus(false)}>🙈 Désactiver</button>
+            </div>
+          )}
           <table>
             <thead>
               <tr>
+                <th><input type="checkbox" checked={selected.length === products.length && products.length > 0} onChange={e => selectAll(e.target.checked)} style={{ width: 18, height: 18, cursor: 'pointer' }} /></th>
                 <th>Image</th>
                 <th>Nom</th>
                 <th>Catégorie</th>
@@ -162,7 +196,8 @@ export default function Admin() {
               {products.map(p => {
                 const imgs = Array.isArray(p.images) ? p.images : JSON.parse(p.images || '[]');
                 return (
-                  <tr key={p.id}>
+                  <tr key={p.id} style={{ background: selected.includes(p.id) ? '#fef2f2' : undefined }}>
+                    <td><input type="checkbox" checked={selected.includes(p.id)} onChange={() => toggleSelect(p.id)} style={{ width: 18, height: 18, cursor: 'pointer' }} /></td>
                     <td><img src={imgs[0] || 'https://placehold.co/40x40/eee/999?text=N'} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} /></td>
                     <td style={{ fontWeight: 600 }}>{p.name}</td>
                     <td>{p.category || '-'}</td>
