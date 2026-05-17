@@ -67,11 +67,17 @@ export default function Admin() {
   const save = async () => {
     setLoading(true);
     const body = { ...form, images: form.images.filter(i => i && (i.startsWith('http') || i.startsWith('data:'))), price: Number(form.price), oldPrice: form.oldPrice ? Number(form.oldPrice) : null, color: form.color || '#000000', category: form.category || '', sku: form.sku || null, stock: Number(form.stock), tierEnabled: form.tierEnabled, tierQty: form.tierEnabled && form.tierQty ? Number(form.tierQty) : null, tierPrice: form.tierEnabled && form.tierPrice ? Number(form.tierPrice) : null, tierMessage: form.tierEnabled ? form.tierMessage || null : null, tierGift: form.tierEnabled ? form.tierGift || null : null };
-    await fetch('/api/products' + (editId ? `/${editId}` : ''), {
+    const res = await fetch('/api/products' + (editId ? `/${editId}` : ''), {
       method: editId ? 'PUT' : 'POST',
       headers: authHeaders(),
       body: JSON.stringify(body),
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert('Erreur: ' + (err.error || err.message || res.status));
+      setLoading(false);
+      return;
+    }
     setForm({ name: '', price: '', oldPrice: '', images: [''], description: '', color: '#000000', stock: '1', tierEnabled: false, tierQty: '', tierPrice: '', tierMessage: '', tierGift: '' });
     setEditId(null);
     setLoading(false);
@@ -562,6 +568,7 @@ export default function Admin() {
                       const r = await fetch('/api/upload-image', { method: 'POST', headers: { 'x-admin-password': password }, body: fd });
                       const d = await r.json();
                       if (d.url) setForm(f => { const im = [...f.images]; im[i] = d.url; return { ...f, images: im }; });
+                      else alert('Erreur upload: ' + (d.error || 'inconnue'));
                     }} />
                   </label>
                   {form.images[i] && <img src={form.images[i]} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />}
