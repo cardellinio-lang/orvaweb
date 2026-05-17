@@ -24,6 +24,11 @@ export async function PATCH(req, { params }) {
 
 export async function DELETE(req, { params }) {
   const auth = requireAdmin(req); if (auth) return auth;
-  await prisma.product.update({ where: { id: params.id }, data: { active: false } });
-  return Response.json({ ok: true });
+  const orders = await prisma.orderItem.count({ where: { productId: params.id } });
+  if (orders > 0) {
+    await prisma.product.update({ where: { id: params.id }, data: { active: false } });
+    return Response.json({ ok: true, inactive: true, message: `${orders} commande(s) existante(s) — produit désactivé au lieu d'être supprimé` });
+  }
+  await prisma.product.delete({ where: { id: params.id } });
+  return Response.json({ ok: true, deleted: true });
 }

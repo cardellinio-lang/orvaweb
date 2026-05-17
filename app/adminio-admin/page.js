@@ -88,6 +88,8 @@ export default function Admin() {
     if (!confirm('Supprimer ce produit ?')) return;
     const r = await fetch(`/api/products/${id}`, { method: 'DELETE', headers: authHeaders() });
     if (!r.ok) return alert('Erreur : ' + (await r.json()).error);
+    const data = await r.json();
+    if (data.inactive) alert(data.message);
     load();
   };
 
