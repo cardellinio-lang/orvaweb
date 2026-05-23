@@ -191,6 +191,7 @@ export default function Admin() {
           🚪 Déconnexion
         </button>
       </div>
+      {tab === 'products' && (
         <div className="card" style={{ overflowX: 'auto' }}>
           {selected.length > 0 && (
             <div className="flex" style={{ gap: 8, marginBottom: 12, padding: '8px 12px', background: '#fef2f2', borderRadius: 10, alignItems: 'center' }}>
@@ -240,6 +241,7 @@ export default function Admin() {
             </tbody>
           </table>
         </div>
+      )}
 
       {tab === 'orders' && (
         <div>
