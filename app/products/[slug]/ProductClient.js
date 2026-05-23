@@ -159,8 +159,8 @@ export default function ProductClient({ product, wilayas, communes}) {
       `}} />
       {/* COD Banner */}
         <div style={{ background: c, color: '#fff', borderRadius: 0, padding: '14px 20px', textAlign: 'center', fontWeight: 900, fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
-          🚚 الدفع عند الاستلام
-          <img src="/favicon4.png" alt="" style={{ width: 24, height: 24, filter: 'brightness(0) invert(1)' }} />
+          <span style={{ fontSize: 26 }}>🚚</span>
+          الدفع عند الاستلام
         </div>
 
       <div className="lg-flex-row" style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'flex-start' }}>
