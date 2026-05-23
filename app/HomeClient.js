@@ -30,6 +30,7 @@ const TAGS = {
   'cahier-magique': ['3-5'],
   'cadre': [],
   'wiklo': [],
+  'sijada-salat': ['عربية'],
 };
 
 const FILTERS = [

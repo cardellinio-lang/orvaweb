@@ -38,6 +38,9 @@ export default function ProductClient({ product, wilayas, communes}) {
   const variants = product.slug === 'cahier-magique' ? [
     { label: 'A5', price: 1700, desc: 'صغير' },
     { label: 'A4', price: 2400, desc: 'كبير' },
+  ] : product.slug === 'sijada-salat' ? [
+    { label: 'سجادة ابنتي', price: 2400, desc: 'وردي', color: '#e91e63' },
+    { label: 'سجادة ابني', price: 2400, desc: 'أزرق', color: '#1565c0' },
   ] : null;
   const [variant, setVariant] = useState(variants ? variants[0].label : null);
 
@@ -261,7 +264,7 @@ export default function ProductClient({ product, wilayas, communes}) {
               {/* Variant selector */}
               {variants && (
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>اختيار القياس</label>
+                  <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>اختيار النوع</label>
                   <div style={{ display: 'flex', gap: 10 }}>
                     {variants.map(v => (
                       <button key={v.label} type="button" onClick={() => setVariant(v.label)}
@@ -272,7 +275,12 @@ export default function ProductClient({ product, wilayas, communes}) {
                                 color: variant === v.label ? '#fff' : '#1d1d1f',
                                 cursor: 'pointer', textAlign: 'center', transition: 'all .2s',
                               }}>
-                        <div style={{ fontSize: 18, fontWeight: 900 }}>{v.label}</div>
+                        {v.color && (
+                          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
+                            <div style={{ width: 22, height: 22, borderRadius: '50%', background: v.color, border: '2px solid rgba(0,0,0,0.15)' }} />
+                          </div>
+                        )}
+                        <div style={{ fontSize: 16, fontWeight: 900 }}>{v.label}</div>
                         <div style={{ fontSize: 13, fontWeight: 700, marginTop: 2, opacity: 0.85 }}>{v.desc}</div>
                         <div style={{ fontSize: 15, fontWeight: 800, marginTop: 4 }}>{v.price.toLocaleString()} د.ج</div>
                       </button>
