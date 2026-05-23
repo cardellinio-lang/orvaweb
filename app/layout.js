@@ -45,6 +45,7 @@ export default function RootLayout({ children }) {
         <footer style={{ textAlign: 'center', padding: 20, color: '#8e8e93', fontSize: 13, borderTop: '1px solid #e8e8ed' }}>
           ibishop-2026
         </footer>
+        <style>{`*{-webkit-user-select:none;user-select:none}img{-webkit-user-drag:none;pointer-events:none}`}</style>
         <script dangerouslySetInnerHTML={{ __html: `fetch('/api/pageview',{method:'POST'}).catch(()=>{})` }} />
       </body>
     </html>

@@ -158,10 +158,11 @@ export default function ProductClient({ product, wilayas, communes}) {
         }
       `}} />
       {/* COD Banner */}
-      <div style={{ background: c, color: '#fff', borderRadius: 0, padding: '14px 20px', textAlign: 'center', fontWeight: 900, fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
-        <img src="/moto-icon.png" alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />
-        الدفع عند الاستلام
-      </div>
+        <div style={{ background: c, color: '#fff', borderRadius: 0, padding: '14px 20px', textAlign: 'center', fontWeight: 900, fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
+          <img src="/moto-icon.png" alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+          الدفع عند الاستلام
+          <img src="/favicon4.png" alt="" style={{ width: 24, height: 24, filter: 'brightness(0) invert(1)' }} />
+        </div>
 
       <div className="lg-flex-row" style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'flex-start' }}>
         {/* Left column - Image */}
@@ -317,12 +318,12 @@ export default function ProductClient({ product, wilayas, communes}) {
                 <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>نوع التوصيل</label>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button type="button" onClick={() => setDeliveryType('home')}
-                          style={{ flex: 1, padding: '14px 8px', borderRadius: 14, border: deliveryType === 'home' ? '2px solid ' + c : '2px solid #e8e8ed', background: deliveryType === 'home' ? c : '#fff', color: deliveryType === 'home' ? '#fff' : '#1d1d1f', cursor: 'pointer', textAlign: 'center', transition: 'all .2s' }}>
+                          style={{ flex: 1, padding: '14px 8px', borderRadius: 14, border: deliveryType === 'home' ? '2px solid ' + c : '2px solid #e8e8ed', background: deliveryType === 'home' ? c : '#fff', color: deliveryType === 'home' ? '#fff' : '#1d1d1f', cursor: 'pointer', transition: 'all .2s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                     <img src="/home-icon.svg" alt="" style={{ width: 22, height: 22 }} />
                     <span style={{ fontSize: 13, fontWeight: 800 }}>التوصيل إلى المنزل</span>
                   </button>
                   <button type="button" onClick={() => setDeliveryType('office')}
-                          style={{ flex: 1, padding: '14px 8px', borderRadius: 14, border: deliveryType === 'office' ? '2px solid ' + c : '2px solid #e8e8ed', background: deliveryType === 'office' ? c : '#fff', color: deliveryType === 'office' ? '#fff' : '#1d1d1f', cursor: 'pointer', textAlign: 'center', transition: 'all .2s' }}>
+                          style={{ flex: 1, padding: '14px 8px', borderRadius: 14, border: deliveryType === 'office' ? '2px solid ' + c : '2px solid #e8e8ed', background: deliveryType === 'office' ? c : '#fff', color: deliveryType === 'office' ? '#fff' : '#1d1d1f', cursor: 'pointer', transition: 'all .2s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                     <img src="/office-icon.svg" alt="" style={{ width: 22, height: 22 }} />
                     <span style={{ fontSize: 13, fontWeight: 800 }}>التوصيل إلى المكتب</span>
                   </button>
@@ -359,7 +360,7 @@ export default function ProductClient({ product, wilayas, communes}) {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
                     <span style={{ fontSize: 16, fontWeight: 900, color: '#1d1d1f' }}>السعر الإجمالي</span>
-                    <span style={{ fontSize: 16, fontWeight: 900, color: '#ffd700' }}>{delivery > 0 ? `${total.toLocaleString()} د.ج` : `${subtotal.toLocaleString()} د.ج`}</span>
+                    <span style={{ fontSize: 20, fontWeight: 900, color: '#c2185b' }}>{delivery > 0 ? `${total.toLocaleString()} د.ج` : `${subtotal.toLocaleString()} د.ج`}</span>
                   </div>
                 </div>
               </div>
