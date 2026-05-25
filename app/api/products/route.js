@@ -7,7 +7,9 @@ function cleanImages(images) {
 
 export async function GET() {
   const products = await prisma.product.findMany({ orderBy: { createdAt: 'desc' } });
-  return Response.json(products);
+  return new Response(JSON.stringify(products), {
+    headers: { 'Cache-Control': 'no-store, max-age=0' },
+  });
 }
 
 export async function POST(req) {

@@ -54,7 +54,7 @@ export default function Admin() {
   };
 
   const load = async () => {
-    const r = await fetch('/api/products');
+    const r = await fetch('/api/products?t=' + Date.now());
     setProducts(await r.json());
     const o = await fetch('/api/orders');
     setOrders(await o.json());
