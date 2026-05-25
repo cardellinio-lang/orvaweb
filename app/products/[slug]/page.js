@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import ProductClient from './ProductClient';
 
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 export default async function ProductPage({ params }) {
   const product = await prisma.product.findUnique({ where: { slug: params.slug } });
