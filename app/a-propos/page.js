@@ -57,40 +57,65 @@ function createAudioContext() {
   }
 }
 
-function playChime(ctx) {
+function playBird(ctx) {
   if (!ctx) return;
   const now = ctx.currentTime;
-  const notes = [523.25, 587.33, 659.25, 783.99, 880];
-  notes.forEach((freq, i) => {
+  const birdSongs = [
+    [{ f: 1800, t: 0.04 }, { f: 2200, t: 0.06 }, { f: 1900, t: 0.05 }],
+    [{ f: 2400, t: 0.05 }, { f: 2800, t: 0.04 }],
+    [{ f: 1600, t: 0.06 }, { f: 2000, t: 0.05 }, { f: 2400, t: 0.04 }, { f: 2000, t: 0.05 }],
+    [{ f: 3000, t: 0.03 }, { f: 3400, t: 0.04 }],
+  ];
+  const song = birdSongs[Math.floor(Math.random() * birdSongs.length)];
+  const startDelay = Math.random() * 0.3;
+  song.forEach((note, i) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.08, now + i * 0.08);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.8);
+    osc.frequency.setValueAtTime(note.f, now + startDelay + i * 0.06);
+    osc.frequency.exponentialRampToValueAtTime(note.f * 1.02, now + startDelay + i * 0.06 + note.t);
+    gain.gain.setValueAtTime(0, now + startDelay + i * 0.06);
+    gain.gain.linearRampToValueAtTime(0.015, now + startDelay + i * 0.06 + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + startDelay + i * 0.06 + note.t + 0.1);
     osc.connect(gain);
     gain.connect(ctx.destination);
-    osc.start(now + i * 0.08);
-    osc.stop(now + i * 0.08 + 0.8);
+    osc.start(now + startDelay + i * 0.06);
+    osc.stop(now + startDelay + i * 0.06 + note.t + 0.15);
   });
 }
 
-function playNatureAmbience(ctx) {
+function playWater(ctx) {
   if (!ctx) return;
   const now = ctx.currentTime;
-  for (let i = 0; i < 3; i++) {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    const freq = 800 + Math.random() * 400;
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.02, now + i * 0.3);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.3 + 1.5 + Math.random());
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now + i * 0.3);
-    osc.stop(now + i * 0.3 + 2);
+  const bufferSize = ctx.sampleRate * 1.5;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(Math.random(), 3);
   }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const bandpass = ctx.createBiquadFilter();
+  bandpass.type = 'bandpass';
+  bandpass.frequency.value = 600 + Math.random() * 400;
+  bandpass.Q.value = 0.8;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.012, now);
+  gain.gain.linearRampToValueAtTime(0.008, now + 0.5);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+  noise.connect(bandpass);
+  bandpass.connect(gain);
+  gain.connect(ctx.destination);
+  noise.start(now);
+  noise.stop(now + 1.5);
+}
+
+function playForest(ctx) {
+  if (!ctx) return;
+  for (let i = 0; i < 2; i++) {
+    setTimeout(() => playBird(ctx), i * 800 + Math.random() * 400);
+  }
+  setTimeout(() => playWater(ctx), 200);
 }
 
 function FloatingElement({ children, index }) {
@@ -283,10 +308,10 @@ export default function APropos() {
   const handleEnter = useCallback(() => {
     const ctx = initAudio();
     if (ctx && soundOn) {
-      for (let i = 0; i < 3; i++) {
-        setTimeout(() => playChime(ctx), i * 200);
-      }
-      setTimeout(() => playNatureAmbience(ctx), 600);
+      playBird(ctx);
+      setTimeout(() => playBird(ctx), 400);
+      setTimeout(() => playWater(ctx), 700);
+      setTimeout(() => playBird(ctx), 1200);
     }
     setEntered(true);
   }, [initAudio, soundOn]);
@@ -294,8 +319,10 @@ export default function APropos() {
   useEffect(() => {
     if (entered && audioCtx && soundOn) {
       const interval = setInterval(() => {
-        if (Math.random() > 0.7) playNatureAmbience(audioCtx);
-      }, 4000);
+        const r = Math.random();
+        if (r < 0.3) playForest(audioCtx);
+        else if (r < 0.5) playBird(audioCtx);
+      }, 5000 + Math.random() * 3000);
       return () => clearInterval(interval);
     }
   }, [entered, audioCtx, soundOn]);
