@@ -136,7 +136,7 @@ export default function APropos() {
           </div>
           <h1 style={{
             fontSize: 36, fontWeight: 900, color: '#1d1d1f', marginBottom: 12,
-            background: 'linear-gradient(135deg, #8bc43f, #d4a5e8, #a8d8ea)',
+            background: 'linear-gradient(135deg, #E54E19, #d4a5e8, #a8d8ea)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
             مرحباً بك في عالم ibishop
@@ -147,7 +147,7 @@ export default function APropos() {
           <button onClick={() => setEntered(true)}
                   style={{
                     padding: '16px 48px', fontSize: 20, fontWeight: 900,
-                    background: 'linear-gradient(135deg, #8bc43f, #6a9f2e)',
+                    background: 'linear-gradient(135deg, #E54E19, #c4410d)',
                     color: '#fff', border: 'none', borderRadius: 50,
                     cursor: 'pointer', boxShadow: '0 8px 32px rgba(139,196,63,0.3)',
                     transition: 'transform 0.2s, box-shadow 0.2s',
@@ -181,7 +181,7 @@ export default function APropos() {
           <div style={{ fontSize: 56, marginBottom: 12, animation: 'gentleBounce 3s ease-in-out infinite' }}>🧸</div>
           <h1 style={{
             fontSize: 32, fontWeight: 900, marginBottom: 8,
-            background: 'linear-gradient(135deg, #8bc43f, #d4a5e8, #a8d8ea)',
+            background: 'linear-gradient(135deg, #E54E19, #d4a5e8, #a8d8ea)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
             من نحن
@@ -255,7 +255,7 @@ export default function APropos() {
             desc="الدفع عند الاستلام والتوصيل لكل ولايات الجزائر بكل ثقة وأمان"
           />
           <ValueCard
-            emoji="🎯" color="#8bc43f" index={3}
+            emoji="🎯" color="#E54E19" index={3}
             title="التميز والاختيار"
             desc="نختار بعناية كل منتج ليكون فريداً ومميزاً وملهماً للأطفال"
           />
