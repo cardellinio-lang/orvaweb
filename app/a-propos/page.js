@@ -191,7 +191,7 @@ export default function APropos() {
             لأطفال الجزائر
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
-            {['🦋', '🌸', '🌟', '🎠', '🌈', '🪁'].map((e, i) => (
+            {['🦋', '🌸', '🌟', '🎠', '🪁'].map((e, i) => (
               <span key={i} style={{
                 fontSize: 24, animation: `floatStar ${3 + i * 0.5}s ease-in-out ${i * 0.2}s infinite`,
               }}>{e}</span>
@@ -236,7 +236,7 @@ export default function APropos() {
           fontSize: 24, fontWeight: 900, textAlign: 'center', marginBottom: 20, color: '#1d1d1f',
           animation: 'fadeSlideUp 0.6s ease-out 0.3s both',
         }}>
-          🌈 قيمنا
+          قيمنا
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
           <ValueCard
@@ -297,7 +297,7 @@ export default function APropos() {
           border: '2px solid #d4a5e8',
           animation: 'fadeSlideUp 0.6s ease-out 0.6s both',
         }}>
-          <div style={{ fontSize: 44, marginBottom: 12 }}>🌈</div>
+          <div style={{ fontSize: 44, marginBottom: 12 }}>✨</div>
           <h2 style={{ fontSize: 22, fontWeight: 900, color: '#1d1d1f', marginBottom: 12 }}>عالم ibishop السحري</h2>
           <p style={{ fontSize: 14, color: '#6e6e73', lineHeight: 1.8, margin: 0 }}>
             في ibishop، كل منتج هو بداية مغامرة جديدة. نؤمن بأن كل طفل يستحق الأفضل،
