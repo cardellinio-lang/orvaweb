@@ -268,21 +268,20 @@ export default function APropos() {
         position: 'relative', zIndex: 1,
       }}>
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12,
+          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12,
           animation: 'fadeSlideUp 0.6s ease-out 0.5s both',
         }}>
           {[
-            { num: 'ₓ', label: 'ولايات', emoji: '📍' },
-            { num: '✧', label: 'منتجات مميزة', emoji: '🎁' },
-            { num: '♡', label: 'عائلات سعيدة', emoji: '👨‍👩‍👧‍👦' },
+            { num: '✧', label: 'منتجات مميزة', emoji: '🎁', color: '#d4a5e8' },
+            { num: '♡', label: 'عائلات سعيدة', emoji: '👨‍👩‍👧‍👦', color: '#f5a0b0' },
           ].map((s, i) => (
             <div key={i} style={{
               background: '#fff', borderRadius: 20, padding: '20px 12px', textAlign: 'center',
-              border: `2px solid ${COLORS[i]}`,
+              border: `2px solid ${s.color}`,
               boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
             }}>
               <div style={{ fontSize: 28, marginBottom: 4 }}>{s.emoji}</div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: COLORS[i] }}>{s.num}</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: s.color }}>{s.num}</div>
               <div style={{ fontSize: 12, color: '#8e8e93', fontWeight: 700 }}>{s.label}</div>
             </div>
           ))}
