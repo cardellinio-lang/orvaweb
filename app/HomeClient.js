@@ -41,6 +41,13 @@ const FILTERS = [
   { key: '3-5', label: '3-5 سنوات' },
 ];
 
+const CATEGORIES = [
+  { icon: '🗣️', label: 'صعوبات النطق', color: '#E54E19' },
+  { icon: '📚', label: 'صعوبات التعلم', color: '#4CAF50' },
+  { icon: '🧠', label: 'فرط الحركة', color: '#E54E19' },
+  { icon: '✋', label: 'مهارات حركية', color: '#4CAF50' },
+];
+
 const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
 function ProductCard({ p, now }) {
@@ -98,6 +105,7 @@ function ProductCard({ p, now }) {
 export default function HomeClient({ products }) {
   const [active, setActive] = useState('all');
   const now = useMemo(() => Date.now(), []);
+  const [showAll, setShowAll] = useState(false);
 
   const filtered = active === 'all'
     ? products
@@ -105,34 +113,145 @@ export default function HomeClient({ products }) {
 
   return (
     <div>
-      <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 900, marginBottom: 6 }}>تسوق الآن</h1>
-        <p style={{ color: '#8e8e93', fontSize: 14 }}>الدفع عند الاستلام • التوصيل إلى 58 ولاية</p>
+      {/* Hero Section */}
+      <div style={{
+        background: '#faf6f0', borderRadius: 24, padding: '40px 20px',
+        textAlign: 'center', marginBottom: 32, position: 'relative', overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: -30, right: -30, width: 120, height: 120,
+          borderRadius: '50%', background: 'rgba(229,78,25,0.08)',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: -40, left: -20, width: 160, height: 160,
+          borderRadius: '50%', background: 'rgba(76,175,80,0.08)',
+        }} />
+        <div style={{ fontSize: 48, marginBottom: 12 }}>🧩</div>
+        <h1 style={{ fontSize: 28, fontWeight: 900, lineHeight: 1.3, marginBottom: 8 }}>
+          وسائل تعليمية و علاجية
+        </h1>
+        <p style={{ fontSize: 16, color: '#6e6e73', lineHeight: 1.6, marginBottom: 20, maxWidth: 500, margin: '0 auto 20px' }}>
+          لأخصائيي الأرطوفونيا و المعالجة البيداغوجية — نصنع و نوفر أدوات الدعم للأطفال ذوي صعوبات التعلم و النطق و فرط الحركة
+        </p>
+        <a href="/blog" style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          background: '#E54E19', color: '#fff', padding: '14px 32px',
+          borderRadius: 14, fontWeight: 800, fontSize: 16,
+        }}>
+          📖 اكتشف مقالاتنا
+        </a>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 20 }}>
-        {FILTERS.map(f => (
-          <button key={f.key} onClick={() => setActive(f.key)}
-                  style={{
-                    padding: '8px 18px', borderRadius: 20, fontSize: 14, fontWeight: 800,
-                    border: 'none', cursor: 'pointer', transition: 'all .15s',
-                    background: active === f.key ? '#1d1d1f' : '#e8e8ed',
-                    color: active === f.key ? '#fff' : '#1d1d1f',
-                  }}>
-            {f.label}
-          </button>
+      {/* Category Icons */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12,
+        marginBottom: 36,
+      }}>
+        {CATEGORIES.map(cat => (
+          <div key={cat.label} style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            gap: 8, padding: '16px 8px', background: '#fff', borderRadius: 20,
+            boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+          }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%',
+              background: cat.color, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontSize: 26,
+            }}>
+              {cat.icon}
+            </div>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#1d1d1f', textAlign: 'center', lineHeight: 1.3 }}>
+              {cat.label}
+            </span>
+          </div>
         ))}
       </div>
 
-      {filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#8e8e93' }}>
-          لا توجد منتجات في هذا القسم
+      {/* Products Section */}
+      <div style={{ marginBottom: 36 }}>
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>منتجاتنا</h2>
+          <p style={{ color: '#8e8e93', fontSize: 14 }}>
+            {products.length} منتج متخصص للأرطوفونيا و الدعم البيداغوجي
+          </p>
         </div>
-      ) : (
-        <div className="grid">
-          {filtered.map(p => <ProductCard key={p.id} p={p} now={now} />)}
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 20 }}>
+          {FILTERS.map(f => (
+            <button key={f.key} onClick={() => { setActive(f.key); setShowAll(false); }}
+                    style={{
+                      padding: '8px 18px', borderRadius: 20, fontSize: 14, fontWeight: 800,
+                      border: 'none', cursor: 'pointer', transition: 'all .15s',
+                      background: active === f.key ? '#1d1d1f' : '#e8e8ed',
+                      color: active === f.key ? '#fff' : '#1d1d1f',
+                    }}>
+              {f.label}
+            </button>
+          ))}
         </div>
-      )}
+
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: 60, color: '#8e8e93' }}>
+            لا توجد منتجات في هذا القسم
+          </div>
+        ) : (
+          <div className="grid">
+            {(showAll ? filtered : filtered.slice(0, 8)).map(p => <ProductCard key={p.id} p={p} now={now} />)}
+          </div>
+        )}
+
+        {filtered.length > 8 && !showAll && (
+          <div style={{ textAlign: 'center', marginTop: 20 }}>
+            <button onClick={() => setShowAll(true)}
+              style={{
+                background: 'transparent', border: '2px solid #E54E19', color: '#E54E19',
+                padding: '10px 28px', borderRadius: 12, fontWeight: 800, fontSize: 15,
+                cursor: 'pointer',
+              }}>
+              عرض الكل ({filtered.length})
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Orange CTA Strip */}
+      <div style={{
+        background: 'linear-gradient(135deg, #E54E19 0%, #d94410 100%)',
+        borderRadius: 24, padding: '40px 24px', textAlign: 'center',
+        marginBottom: 36, color: '#fff',
+      }}>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>📖</div>
+        <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>المدونة التعليمية</h2>
+        <p style={{ fontSize: 15, opacity: 0.9, lineHeight: 1.6, marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
+          مقالات و نصائح للأهل و الأخصائيين — تعرف على أفضل الطرق لاستخدام وسائلنا التعليمية
+        </p>
+        <a href="/blog" style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          background: '#fff', color: '#E54E19', padding: '12px 28px',
+          borderRadius: 14, fontWeight: 800, fontSize: 15,
+        }}>
+          تصفح المقالات ←
+        </a>
+      </div>
+
+      {/* Stats Strip */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
+        marginBottom: 36, textAlign: 'center',
+      }}>
+        <div style={{ background: '#fff', borderRadius: 20, padding: '20px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#E54E19' }}>{products.length}+</div>
+          <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>منتج متخصص</div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: 20, padding: '20px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#4CAF50' }}>58</div>
+          <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>ولاية توصيل</div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: 20, padding: '20px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#E54E19' }}>10</div>
+          <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>مقال تعليمي</div>
+        </div>
+      </div>
     </div>
   );
 }

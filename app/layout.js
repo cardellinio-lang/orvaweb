@@ -38,6 +38,9 @@ export default async function RootLayout({ children }) {
         )}
       </head>
       <body>
+        <div style={{ background: '#E54E19', color: '#fff', textAlign: 'center', fontSize: 12, fontWeight: 600, padding: '6px 16px' }}>
+          🚚 توصيل إلى 58 ولاية • 💳 الدفع عند الاستلام
+        </div>
         <div style={{ background: '#f5f5f7', padding: '10px 16px 0', position: 'relative' }}>
           <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
