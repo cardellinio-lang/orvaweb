@@ -108,7 +108,7 @@ export default function HomeClient({ products }) {
     <div>
       {/* Products Section */}
       <div style={{ marginBottom: 36 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 20 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 20, marginTop: 32 }}>
           {FILTERS.map(f => (
             <button key={f.key} onClick={() => { setActive(f.key); setShowAll(false); }}
                     style={{
