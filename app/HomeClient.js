@@ -153,26 +153,6 @@ export default function HomeClient({ products }) {
         )}
       </div>
 
-      {/* Orange CTA Strip */}
-      <div style={{
-        background: 'linear-gradient(135deg, #E54E19 0%, #d94410 100%)',
-        borderRadius: 24, padding: '40px 24px', textAlign: 'center',
-        marginBottom: 36, color: '#fff',
-      }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>📖</div>
-        <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>المدونة التعليمية</h2>
-        <p style={{ fontSize: 15, opacity: 0.9, lineHeight: 1.6, marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
-          مقالات و نصائح للأهل و الأخصائيين — تعرف على أفضل الطرق لاستخدام وسائلنا التعليمية
-        </p>
-        <a href="/blog" style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          background: '#fff', color: '#E54E19', padding: '12px 28px',
-          borderRadius: 14, fontWeight: 800, fontSize: 15,
-        }}>
-          تصفح المقالات ←
-        </a>
-      </div>
-
       {/* Stats Strip */}
       <div style={{
         display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
