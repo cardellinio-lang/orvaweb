@@ -115,7 +115,7 @@ export default function HomeClient({ products }) {
     <div>
       {/* Hero Section */}
       <div style={{
-        background: '#faf6f0', borderRadius: 24, padding: '40px 20px',
+        background: 'url(/opacite20.png) #faf6f0', backgroundSize: 'cover', borderRadius: 24, padding: '40px 20px',
         textAlign: 'center', marginBottom: 32, position: 'relative', overflow: 'hidden',
       }}>
         <div style={{
