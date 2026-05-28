@@ -108,13 +108,6 @@ export default function HomeClient({ products }) {
     <div>
       {/* Products Section */}
       <div style={{ marginBottom: 36 }}>
-        <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>منتجاتنا</h2>
-          <p style={{ color: '#8e8e93', fontSize: 14 }}>
-            {products.length} منتجات و ألعاب تعليمية لتنمية طفلك
-          </p>
-        </div>
-
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 20 }}>
           {FILTERS.map(f => (
             <button key={f.key} onClick={() => { setActive(f.key); setShowAll(false); }}
