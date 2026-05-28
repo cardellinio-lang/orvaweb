@@ -38,8 +38,8 @@ export default async function RootLayout({ children }) {
         )}
       </head>
       <body>
-        <div style={{ background: '#E54E19', color: '#fff', textAlign: 'center', fontSize: 12, fontWeight: 600, padding: '6px 16px' }}>
-          🚚 توصيل إلى 58 ولاية • 💳 الدفع عند الاستلام
+        <div style={{ background: '#4CAF50', color: '#fff', textAlign: 'center', fontSize: 13, fontWeight: 700, padding: '4px 16px' }}>
+          ألعاب تعليمية و تربوية للأطفال
         </div>
         <div style={{ background: '#f5f5f7', padding: '10px 16px 0', position: 'relative', borderBottom: '2px solid rgba(229,78,25,0.12)' }}>
           <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
