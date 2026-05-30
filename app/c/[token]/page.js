@@ -1,26 +1,32 @@
-import prisma from '@/lib/db';
+'use client';
 
-export default async function ConfirmOrder({ params }) {
+import { useEffect, useState } from 'react';
+
+export default function ConfirmOrder({ params }) {
   const { token } = params;
+  const [order, setOrder] = useState(null);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState(false);
 
-  let order = null;
-  let error = false;
+  useEffect(() => {
+    fetch('/api/confirm?token=' + encodeURIComponent(token))
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { setError(true); return; }
+        setOrder(data);
+        if (data.confirmed === 'yes') setDone(true);
+      })
+      .catch(() => setError(true));
+  }, [token]);
 
-  try {
-    order = await prisma.order.findUnique({ where: { token } });
-    if (order) {
-      if (order.confirmed !== 'yes') {
-        await prisma.order.update({
-          where: { id: order.id },
-          data: { confirmed: 'yes', status: 'confirmed' },
-        });
-      }
-    } else {
-      error = true;
-    }
-  } catch {
-    error = true;
-  }
+  const confirm = async () => {
+    const res = await fetch('/api/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    if (res.ok) setDone(true);
+  };
 
   const s = {
     page: {
@@ -47,9 +53,8 @@ export default async function ConfirmOrder({ params }) {
       display: 'inline-block', marginTop: 28, padding: '16px 48px',
       background: 'linear-gradient(135deg, #16a34a, #22c55e)',
       color: '#fff', borderRadius: 16, textDecoration: 'none',
-      fontWeight: 800, fontSize: 18,
+      fontWeight: 800, fontSize: 18, border: 'none', cursor: 'pointer',
       boxShadow: '0 4px 20px rgba(22,163,74,0.3)',
-      transition: 'all 0.2s',
     },
   };
 
@@ -79,15 +84,15 @@ export default async function ConfirmOrder({ params }) {
                 <h1 style={{ ...s.title, color: '#991b1b' }}>الطلب غير موجود</h1>
                 <p style={s.text}>عذراً، لم نتمكن من العثور على هذا الطلب. الرابط غير صالح.</p>
               </>
-            ) : (
+            ) : done || order?.confirmed === 'yes' ? (
               <>
                 <div style={s.check}>
                   <span style={{ fontSize: 50 }}>✅</span>
                 </div>
                 <h1 style={s.title}>تم تأكيد طلبك بنجاح!</h1>
-                <p style={s.text}>شكراً لك {order.customer}!</p>
-                <p style={s.detail}>رقم الطلب: {order.number}</p>
-                <p style={s.detail}>المبلغ: {order.total?.toLocaleString()} د.ج</p>
+                <p style={s.text}>شكراً لك {order?.customer}!</p>
+                <p style={s.detail}>رقم الطلب: {order?.number}</p>
+                <p style={s.detail}>المبلغ: {order?.total?.toLocaleString()} د.ج</p>
                 <p style={{ ...s.text, marginTop: 12, fontSize: 15 }}>
                   سنقوم بتجهيز طلبك وتوصيله في أقرب وقت.
                 </p>
@@ -95,6 +100,24 @@ export default async function ConfirmOrder({ params }) {
                   🛒 العودة للمتجر
                 </a>
               </>
+            ) : order ? (
+              <>
+                <div style={{ ...s.check, background: 'linear-gradient(135deg, #f59e0b, #fbbf24)' }}>
+                  <span style={{ fontSize: 50 }}>📋</span>
+                </div>
+                <h1 style={{ ...s.title, color: '#92400e' }}>تأكيد طلبك</h1>
+                <p style={s.text}>مرحباً {order.customer}!</p>
+                <p style={s.detail}>رقم الطلب: {order.number}</p>
+                <p style={s.detail}>المبلغ: {order.total?.toLocaleString()} د.ج</p>
+                <p style={{ ...s.text, marginTop: 12, fontSize: 15 }}>
+                  اضغط على الزر أدناه لتأكيد طلبك
+                </p>
+                <button onClick={confirm} style={s.btn}>
+                  ✅ تأكيد الطلب
+                </button>
+              </>
+            ) : (
+              <p style={s.text}>جاري تحميل معلومات الطلب...</p>
             )}
           </div>
         </div>
