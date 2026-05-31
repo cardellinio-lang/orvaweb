@@ -582,6 +582,11 @@ export default function Admin() {
                             {o.ecoTrackData.shipmentId && (
                               <div style={{ color: '#6e6e73' }}>ID: {o.ecoTrackData.shipmentId}</div>
                             )}
+                            {o.ecoTrackData.fellBackToHome && (
+                              <div style={{ color: '#d97706', fontSize: 11, fontWeight: 600 }}>
+                                ⚠️ Stopdesk indisponible, basculé en domicile
+                              </div>
+                            )}
                             <button style={{
                               padding: '6px 10px', borderRadius: 8, border: '1px solid #86efac',
                               background: '#fff', color: '#16a34a',
@@ -625,6 +630,8 @@ export default function Admin() {
                               const d = await r.json();
                               if (!d.ok) {
                                 alert('Erreur Packers: ' + (d.error || 'inconnue'));
+                              } else if (d.fellBackToHome) {
+                                alert('⚠️ Stopdesk non disponible pour cette commune. La livraison a été basculée en domicile automatiquement.');
                               }
                               load();
                             } catch (e) {

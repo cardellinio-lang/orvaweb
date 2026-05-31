@@ -40,6 +40,7 @@ export async function POST(req, { params }) {
           shipmentId: result.shipmentId,
           labelUrl: result.labelUrl,
           shippedAt: new Date().toISOString(),
+          fellBackToHome: result.fellBackToHome || false,
           raw: result.raw,
         },
       },
@@ -50,6 +51,7 @@ export async function POST(req, { params }) {
       trackingNumber: result.trackingNumber,
       shipmentId: result.shipmentId,
       labelUrl: result.labelUrl,
+      fellBackToHome: result.fellBackToHome || false,
     });
   } catch (err) {
     const status = err instanceof EcotrackError && err.status ? err.status : 500;
