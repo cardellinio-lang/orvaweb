@@ -226,6 +226,13 @@ export default function Admin() {
     setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
+  const moveProduct = async (id, direction) => {
+    const res = await fetch('/api/products', { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ id, direction }) });
+    if (!res.ok) { const e = await res.json(); return alert(e.error || 'Erreur'); }
+    const data = await res.json();
+    setProducts(data.products);
+  };
+
   const bulkDelete = async () => {
     if (!selected.length) return;
     if (!confirm(`Supprimer ${selected.length} produit(s) ?`)) return;
@@ -320,11 +327,12 @@ export default function Admin() {
                 <th>Couleur</th>
                 <th>Stock</th>
                 <th>Status</th>
+                <th>Ordre</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {products.map(p => {
+              {products.map((p, i) => {
                 const imgs = Array.isArray(p.images) ? p.images : JSON.parse(p.images || '[]');
                 return (
                   <tr key={p.id} style={{ background: selected.includes(p.id) ? '#fef2f2' : undefined }}>
@@ -336,6 +344,12 @@ export default function Admin() {
                     <td><span style={{ display: 'inline-block', width: 20, height: 20, borderRadius: 6, background: p.color || '#000', verticalAlign: 'middle' }}></span></td>
                     <td>{p.stock}</td>
                     <td><span className="badge" style={{ background: p.active ? '#16a34a' : '#888' }}>{p.active ? 'Actif' : 'Inactif'}</span></td>
+                    <td>
+                      <div className="flex" style={{ gap: 2 }}>
+                        <button className="btn btn-ghost" style={{ padding: '6px 8px', fontSize: 13 }} onClick={() => moveProduct(p.id, 'up')} disabled={i === 0} title="Monter">⬆️</button>
+                        <button className="btn btn-ghost" style={{ padding: '6px 8px', fontSize: 13 }} onClick={() => moveProduct(p.id, 'down')} disabled={i === products.length - 1} title="Descendre">⬇️</button>
+                      </div>
+                    </td>
                     <td>
                       <div className="flex" style={{ gap: 4 }}>
                         <button className="btn btn-ghost" style={{ padding: '8px 14px' }} onClick={() => { edit(p); setTab('add'); }}>✏️</button>

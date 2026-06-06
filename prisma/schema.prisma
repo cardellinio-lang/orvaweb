@@ -32,6 +32,7 @@ model Product {
   tierPrice   Int?
   tierMessage String?
   tierGift    String?
+  position    Int         @default(0)
   createdAt   DateTime    @default(now())
   orders      OrderItem[]
   reviews     Review[]
