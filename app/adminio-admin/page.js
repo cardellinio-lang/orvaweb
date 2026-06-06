@@ -763,9 +763,10 @@ export default function Admin() {
                   const isPink = o.status === 'confirmed' || o.status === 'shipped';
                   const isWhatsApp = o.confirmed === 'yes';
                   const isDelivered = o.status === 'delivered';
+                  const isPending = o.status === 'pending';
                   return (
                     <tr key={o.id} style={{
-                      background: isWhatsApp ? '#eff6ff' : isDelivered ? '#f0fdf4' : isPink ? '#fff5f5' : '#fff',
+                      background: isWhatsApp ? '#eff6ff' : isDelivered ? '#f0fdf4' : isPink ? '#fff5f5' : isPending ? '#fafafa' : '#fff',
                       borderBottom: '1px solid #f0f0f0',
                     }}>
                       <td style={{ padding: '10px 12px', fontWeight: 700 }}>#{o.number}</td>
