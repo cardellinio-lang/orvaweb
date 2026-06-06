@@ -33,6 +33,7 @@ const TAGS = {
   'cartes-masculin-feminin-couleurs': ['نطق', 'عربية', '3-5'],
   'cartes-association': ['نطق', 'عربية', '3-5'],
   'cartes-defi': ['نطق', 'عربية', '3-5'],
+  'cadre-decor-orthophoniste': ['ديكور'],
 };
 
 const FILTERS = [
@@ -43,6 +44,7 @@ const FILTERS = [
   { key: 'عربية', label: 'عربية' },
   { key: 'ألغاز', label: 'ألغاز' },
   { key: '3-5', label: '3-5 سنوات' },
+  { key: 'ديكور', label: 'ديكور' },
 ];
 
 const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
