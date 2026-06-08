@@ -32,7 +32,6 @@ export default function ProductClient({ product, wilayas, communes}) {
   const [celebration, setCelebration] = useState(null);
   const [blocked, setBlocked] = useState(false);
   const [liveCount, setLiveCount] = useState(14 + Math.floor(Math.random() * 6));
-  const [offerDiscountActive, setOfferDiscountActive] = useState(false);
   const [showLeavePopup, setShowLeavePopup] = useState(false);
   const offerTriggeredRef = useRef(false);
   const popupMinTimeRef = useRef(0);
@@ -45,7 +44,7 @@ export default function ProductClient({ product, wilayas, communes}) {
     const el = document.createElement('div');
     el.id = '__leave_popup_sync__';
     el.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center';
-    el.innerHTML = '<div style="background:linear-gradient(135deg,#dc2626,#ea580c);color:#fff;border-radius:24px;padding:40px 36px;max-width:340px;text-align:center;box-shadow:0 20px 60px rgba(220,38,38,0.4)"><div style="font-size:48px;margin-bottom:8px">🎉</div><div style="font-size:22px;font-weight:900;margin-bottom:12px">عرض خاص جداً لك!</div><div style="font-size:56px;font-weight:900;background:linear-gradient(90deg,#ffd700,#fff,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px">-10%</div><div style="font-size:16px;font-weight:700;opacity:0.9;margin-bottom:8px">خصم 10% على طلبك إذا طلبت الآن</div><div style="font-size:14px;opacity:0.7">السعر مخفض تلقائياً ✅</div></div>';
+    el.innerHTML = '<div style="background:linear-gradient(135deg,#dc2626,#ea580c);color:#fff;border-radius:24px;padding:40px 36px;max-width:340px;text-align:center;box-shadow:0 20px 60px rgba(220,38,38,0.4)"><div style="font-size:48px;margin-bottom:8px">🔥</div><div style="font-size:22px;font-weight:900;margin-bottom:12px">المنتوج ينفذ بسرعة!</div><div style="font-size:16px;font-weight:700;opacity:0.9;margin-bottom:8px">اشتري الآن قبل نفاد الكمية</div></div>';
     document.body.appendChild(el);
   }
   function removeLeavePopup() {
@@ -53,11 +52,10 @@ export default function ProductClient({ product, wilayas, communes}) {
     if (el) el.remove();
   }
 
-  // Restore discount from localStorage (FB in-app browser case)
+  // Restore popup from localStorage (FB in-app browser case)
   useEffect(() => {
     try {
       if (localStorage.getItem('offerDiscount') === 'true') {
-        setOfferDiscountActive(true);
         setShowLeavePopup(true);
         localStorage.removeItem('offerDiscount');
       }
@@ -103,8 +101,8 @@ export default function ProductClient({ product, wilayas, communes}) {
     const handlePopState = () => {
       if (!offerTriggeredRef.current) {
         offerTriggeredRef.current = true;
+        injectLeavePopup();
         popupMinTimeRef.current = Date.now() + 2000;
-        setOfferDiscountActive(true);
         setShowLeavePopup(true);
         try { localStorage.setItem('offerDiscount', 'true'); } catch (e) {}
         window.history.pushState(null, null, window.location.href);
@@ -121,14 +119,13 @@ export default function ProductClient({ product, wilayas, communes}) {
     const handleVisibility = () => {
       if (document.hidden && !offerTriggeredRef.current) {
         offerTriggeredRef.current = true;
-        injectLeavePopup(); // synchronous — visible even if page closes
+        injectLeavePopup();
         popupMinTimeRef.current = Date.now() + 2000;
-        setOfferDiscountActive(true);
         setShowLeavePopup(true);
         try { localStorage.setItem('offerDiscount', 'true'); } catch (e) {}
         setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 600);
       } else if (!document.hidden) {
-        removeLeavePopup(); // cleanup sync popup on return
+        removeLeavePopup();
       }
     };
     document.addEventListener('visibilitychange', handleVisibility);
@@ -147,7 +144,6 @@ export default function ProductClient({ product, wilayas, communes}) {
           if (!offerTriggeredRef.current && window.scrollY < 80) {
             offerTriggeredRef.current = true;
             popupMinTimeRef.current = Date.now() + 2000;
-            setOfferDiscountActive(true);
             setShowLeavePopup(true);
             try { localStorage.setItem('offerDiscount', 'true'); } catch (e) {}
             setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 600);
@@ -169,9 +165,8 @@ export default function ProductClient({ product, wilayas, communes}) {
     const handleBeforeUnload = (e) => {
       if (!offerTriggeredRef.current) {
         offerTriggeredRef.current = true;
-        injectLeavePopup(); // synchronous — visible even if tab closes
+        injectLeavePopup();
         popupMinTimeRef.current = Date.now() + 2000;
-        setOfferDiscountActive(true);
         setShowLeavePopup(true);
         try { localStorage.setItem('offerDiscount', 'true'); } catch (e) {}
         e.preventDefault();
@@ -225,8 +220,7 @@ export default function ProductClient({ product, wilayas, communes}) {
   const basePrice = wordBoxPacks ? (wordBoxPacks.find(p => p.label === pack)?.price || product.price) : (variants ? variants.find(v => v.label === variant).price : product.price);
   const tierActive = product.tierEnabled && product.tierQty && product.tierPrice && qty >= product.tierQty;
   const effectivePrice = tierActive ? product.tierPrice : basePrice;
-  const isLeaveOfferActive = (offerDiscountActive || showLeavePopup) && !tierActive;
-  const finalPrice = isLeaveOfferActive ? Math.round(effectivePrice * 0.9) : effectivePrice;
+  const finalPrice = effectivePrice;
   const selectedPack = wordBoxPacks?.find(p => p.label === pack);
   const packWow = selectedPack?.saving > 0;
   const selectedWilaya = wilayas.find(w => w.id === Number(wilayaId));
@@ -308,7 +302,6 @@ export default function ProductClient({ product, wilayas, communes}) {
       const alwaysLabel = product.slug === 'word-box';
       const packLangLabel = wordBoxPacks ? (pack === 'باقة اكتشاف' ? ` - ${packLang}` : (pack === 'باقة ثنائية' ? ' - عربية + فرنسية' : ' - عربية + فرنسية + إنجليزية')) : '';
       const variantLabel = wordBoxPacks ? ` (${pack}${packLangLabel})` : (variant && (alwaysLabel || variant !== (variants?.[0]?.label || '')) ? ` (${variant})` : '');
-      const leaveNote = isLeaveOfferActive ? ' (عرض -10%)' : '';
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -316,7 +309,7 @@ export default function ProductClient({ product, wilayas, communes}) {
           productId: product.id, qty, customer, phone,
           wilayaId: Number(wilayaId), communeId: Number(communeId),
           address, deliveryType, pageUrl: window.location.href,
-          variantName: variantLabel ? `${product.name} ${variantLabel}${leaveNote}`.trim() : undefined,
+          variantName: variantLabel ? `${product.name} ${variantLabel}`.trim() : undefined,
           variantPrice: (variants || wordBoxPacks) ? finalPrice : undefined,
         }),
       });
@@ -429,22 +422,18 @@ export default function ProductClient({ product, wilayas, communes}) {
             <div style={{ textAlign: 'center', position: 'relative' }}>
               <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8, lineHeight: 1.3, color: '#1d1d1f' }}>{product.name}</h1>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
-                {product.oldPrice && !isLeaveOfferActive && <span style={{ fontSize: 16, color: '#8e8e93', textDecoration: 'line-through' }}>{product.oldPrice.toLocaleString()} د.ج</span>}
+                {product.oldPrice && <span style={{ fontSize: 16, color: '#8e8e93', textDecoration: 'line-through' }}>{product.oldPrice.toLocaleString()} د.ج</span>}
                 <span style={{
-                  fontSize: 28, fontWeight: 800, color: isLeaveOfferActive ? '#dc2626' : (tierActive ? '#16a34a' : c),
+                  fontSize: 28, fontWeight: 800, color: tierActive ? '#16a34a' : c,
                   transition: 'transform 0.3s, color 0.3s',
                 }}>
                   {finalPrice.toLocaleString()} <span style={{ fontSize: 16 }}>د.ج</span>
                 </span>
-                {isLeaveOfferActive && (
-                  <span style={{ fontSize: 14, color: '#8e8e93', textDecoration: 'line-through' }}>{effectivePrice.toLocaleString()} د.ج</span>
-                )}
                 {tierActive && product.price !== effectivePrice && (
                   <span style={{ fontSize: 14, color: '#8e8e93', textDecoration: 'line-through' }}>{product.price.toLocaleString()}</span>
                 )}
               </div>
-              {isLeaveOfferActive && <span style={{ display: 'inline-block', background: '#dc2626', color: '#fff', fontSize: 13, padding: '4px 14px', borderRadius: 20, fontWeight: 900, marginTop: 8, animation: 'pulse 1.5s ease-in-out infinite' }}>🔥 -10% عرض خاص لك!</span>}
-              {!isLeaveOfferActive && discount > 0 && !tierActive && <span style={{ display: 'inline-block', background: c, color: '#fff', fontSize: 11, padding: '3px 10px', borderRadius: 20, fontWeight: 800, marginTop: 8 }}>خصم {discount}%</span>}
+              {discount > 0 && !tierActive && <span style={{ display: 'inline-block', background: c, color: '#fff', fontSize: 11, padding: '3px 10px', borderRadius: 20, fontWeight: 800, marginTop: 8 }}>خصم {discount}%</span>}
               {tierActive && savings > 0 && (
                 <span style={{ display: 'inline-block', background: '#16a34a', color: '#fff', fontSize: 13, padding: '6px 16px', borderRadius: 20, fontWeight: 900, marginTop: 8 }}>
                   ✅ توفير {savings.toLocaleString()} د.ج لكل قطعة!
@@ -654,7 +643,7 @@ export default function ProductClient({ product, wilayas, communes}) {
                           style={{ width: 44, height: 44, borderRadius: 12, border: '1.5px solid #d2d2d7', background: '#fff', fontSize: 22, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1d1d1f' }}>
                     +
                   </button>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: isLeaveOfferActive ? '#dc2626' : (tierActive ? '#16a34a' : c) }}>× {finalPrice.toLocaleString()} د.ج</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: tierActive ? '#16a34a' : c }}>× {finalPrice.toLocaleString()} د.ج</div>
                 </div>
               </div>
 
@@ -703,9 +692,8 @@ export default function ProductClient({ product, wilayas, communes}) {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px dashed #d2d2d7' }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: '#1d1d1f' }}>سعر المنتج</span>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: isLeaveOfferActive ? '#dc2626' : (tierActive ? '#16a34a' : '#6e6e73') }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: tierActive ? '#16a34a' : '#6e6e73' }}>
                       {finalPrice.toLocaleString()} د.ج
-                      {isLeaveOfferActive && <span style={{ fontSize: 12, color: '#8e8e93', textDecoration: 'line-through', marginLeft: 6 }}>{effectivePrice.toLocaleString()}</span>}
                       {tierActive && <span style={{ fontSize: 12, color: '#8e8e93', textDecoration: 'line-through', marginLeft: 6 }}>{product.price.toLocaleString()}</span>}
                     </span>
                   </div>
@@ -794,7 +782,7 @@ export default function ProductClient({ product, wilayas, communes}) {
 
       {/* Leave offer popup */}
       {showLeavePopup && (
-        <div onClick={() => { if (Date.now() < popupMinTimeRef.current) return; setShowLeavePopup(false); setOfferDiscountActive(false); }} style={{
+        <div onClick={() => { if (Date.now() < popupMinTimeRef.current) return; setShowLeavePopup(false); }} style={{
           position: 'fixed', inset: 0, zIndex: 9999,
           background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -825,32 +813,20 @@ export default function ProductClient({ product, wilayas, communes}) {
               boxShadow: '0 20px 60px rgba(220,38,38,0.4)',
               position: 'relative', maxWidth: 360,
             }}>
-              <button onClick={() => { if (Date.now() < popupMinTimeRef.current) return; setShowLeavePopup(false); setOfferDiscountActive(false); }} style={{
+              <button onClick={() => { if (Date.now() < popupMinTimeRef.current) return; setShowLeavePopup(false); }} style={{
                 position: 'absolute', top: 12, left: 12, width: 32, height: 32,
                 borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.2)',
                 color: '#fff', fontSize: 18, fontWeight: 700, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>✕</button>
-              <div style={{ fontSize: 48, marginBottom: 8 }}>🎉</div>
+              <div style={{ fontSize: 48, marginBottom: 8 }}>🔥</div>
               <div style={{
                 fontSize: 22, fontWeight: 900, lineHeight: 1.4, marginBottom: 12,
               }}>
-                عرض خاص جداً لك!
+                المنتوج ينفذ بسرعة!
               </div>
-              <div style={{
-                fontSize: 56, fontWeight: 900, lineHeight: 1,
-                background: 'linear-gradient(90deg, #ffd700, #fff, #ffd700)',
-                backgroundSize: '200% auto',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                marginBottom: 8,
-                animation: 'wowShimmer 1.5s linear infinite',
-              }}>
-                -10%
-              </div>
-              <div style={{ fontSize: 16, fontWeight: 700, opacity: 0.9, marginBottom: 20, lineHeight: 1.5 }}>
-                خصم 10% على طلبك إذا طلبت الآن<br />
-                السعر مخفض تلقائياً ✅
+              <div style={{ fontSize: 18, fontWeight: 700, opacity: 0.9, marginBottom: 24, lineHeight: 1.5 }}>
+                اشتري الآن قبل نفاد الكمية
               </div>
               <button onClick={() => {
                 if (Date.now() < popupMinTimeRef.current) return;
