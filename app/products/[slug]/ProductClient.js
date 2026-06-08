@@ -56,11 +56,10 @@ export default function ProductClient({ product, wilayas, communes}) {
       .catch(() => {});
   }, [product.id]);
 
-  // Leave offer detection — restore from session (with popup + discount)
+  // Leave offer detection — restore discount silently (popup was shown when they left)
   useEffect(() => {
     if (sessionStorage.getItem('leaveOffer') === 'true') {
       leaveAppliedRef.current = true;
-      setShowLeavePopup(true);
     }
   }, []);
 
