@@ -31,8 +31,8 @@ export default function ProductClient({ product, wilayas, communes}) {
   const [scrolled, setScrolled] = useState(false);
   const [celebration, setCelebration] = useState(null);
 
-  const DUPLICATE_MSG = 'لقد قمت بطلب نفس المنتج منذ لحظات سنتصل بك لتأكيد الطلبية';
-  const [duplicateBubble, setDuplicateBubble] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const [blockedProduct, setBlockedProduct] = useState(null);
 
   const [reviews, setReviews] = useState([]);
 
@@ -96,6 +96,26 @@ export default function ProductClient({ product, wilayas, communes}) {
   const imgs = Array.isArray(product.images) ? product.images : [];
 
   const filteredCommunes = wilayaId ? communes.filter(c => c.wilayaId === Number(wilayaId)) : [];
+
+  // Vérifier si ce téléphone est bloqué pour ce produit
+  useEffect(() => {
+    if (phone.replace(/\s/g, '').length >= 10) {
+      fetch('/api/check-phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phone.replace(/\s/g, ''), productId: product.id }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          setBlocked(data.blocked);
+          if (data.blocked) setBlockedProduct(product.name);
+        })
+        .catch(() => {});
+    } else {
+      setBlocked(false);
+      setBlockedProduct(null);
+    }
+  }, [phone, product.id, product.name]);
 
   // Celebration overlay — palier atteint ou pack Duo/Trio sélectionné
   useEffect(() => {
@@ -176,13 +196,8 @@ export default function ProductClient({ product, wilayas, communes}) {
       window.location.href = `/merci?${merciParams.toString()}`;
       return;
     } catch (e) {
-      if (e.message === DUPLICATE_MSG) {
-        setDuplicateBubble(true);
-        setTimeout(() => setDuplicateBubble(false), 5000);
-      } else {
-        setError(e.message || 'حدث خطأ أثناء الطلب');
-        submittedRef.current = false;
-      }
+      setError(e.message || 'حدث خطأ أثناء الطلب');
+      submittedRef.current = false;
     }
     setLoading(false);
   };
@@ -277,6 +292,18 @@ export default function ProductClient({ product, wilayas, communes}) {
               {product.description && <p style={{ color: '#6e6e73', marginTop: 12, fontSize: 14, lineHeight: 1.6 }}>{product.description}</p>}
             </div>
 
+            {blocked ? (
+              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🚫</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#dc2626', marginBottom: 8, lineHeight: 1.6 }}>
+                  تم حظر هذا الرقم لطلب "{blockedProduct}"
+                </div>
+                <div style={{ fontSize: 14, color: '#6e6e73', lineHeight: 1.6 }}>
+                  لقد تم تسجيل 5 طلبات أو أكثر بهذا الرقم لنفس المنتج.<br />
+                  إذا كنت بحاجة للمساعدة، يرجى الاتصال بنا على الرقم التالي.
+                </div>
+              </div>
+            ) : (
             <form ref={formRef} data-order-form onSubmit={e => { e.preventDefault(); submitOrder(); }} style={{ padding: '0 20px 20px' }}>
               {/* Name */}
               <div style={{ marginBottom: 16 }}>
@@ -495,19 +522,6 @@ export default function ProductClient({ product, wilayas, communes}) {
                 </div>
               </div>
 
-              
-              {duplicateBubble && (
-                <div style={{
-                  background: '#fff3cd', border: '1.5px solid #ffc107', borderRadius: 16,
-                  padding: '16px 20px', marginBottom: 16, textAlign: 'center',
-                  animation: 'fadeInUp 0.3s ease-out', boxShadow: '0 4px 20px rgba(255,193,7,0.25)',
-                }}>
-                  <div style={{ fontSize: 28, marginBottom: 6 }}>⚠️</div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: '#856404', lineHeight: 1.6 }}>
-                    {DUPLICATE_MSG}
-                  </div>
-                </div>
-              )}
               {error && <div style={{ background: '#fef2f2', color: '#dc2626', padding: '12px 16px', borderRadius: 12, fontSize: 14, marginBottom: 16 }}>{error}</div>}
 
               {/* Submit button */}
@@ -542,6 +556,7 @@ export default function ProductClient({ product, wilayas, communes}) {
                 </div>
               </div>
             </form>
+            )}
           </div>
         </div>
       </div>

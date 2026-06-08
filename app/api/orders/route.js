@@ -23,18 +23,16 @@ export async function POST(req) {
   const product = await prisma.product.findUnique({ where: { id: data.productId } });
   if (!product) return Response.json({ error: 'Stock insuffisant' }, { status: 400 });
 
-  // Vérification doublon : même téléphone + même produit aujourd'hui
-  const todayStart = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Algiers' }) + 'T00:00:00+01:00');
-  const duplicate = await prisma.order.findFirst({
+  // Vérification : si ce téléphone a 5+ commandes de ce produit → bloqué
+  const abuseCount = await prisma.order.count({
     where: {
       phone: data.phone,
-      createdAt: { gte: todayStart },
       items: { some: { productId: data.productId } },
     },
   });
-  if (duplicate) {
+  if (abuseCount >= 5) {
     return Response.json(
-      { error: 'لقد قمت بطلب نفس المنتج منذ لحظات سنتصل بك لتأكيد الطلبية' },
+      { error: 'لقد تم حظر هذا الرقم بسبب تكرار الطلبات غير المؤكدة' },
       { status: 409 }
     );
   }
