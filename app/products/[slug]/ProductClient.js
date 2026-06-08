@@ -213,6 +213,8 @@ export default function ProductClient({ product, wilayas, communes}) {
   return (
     <div>
       <style dangerouslySetInnerHTML={{ __html: `
+        * { user-select: none; -webkit-user-select: none; }
+        input, textarea, select { user-select: auto; -webkit-user-select: auto; }
         @keyframes fadeInUp {
           0% { opacity: 0; transform: translateY(20px); }
           100% { opacity: 1; transform: translateY(0); }
