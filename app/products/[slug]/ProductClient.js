@@ -99,6 +99,7 @@ export default function ProductClient({ product, wilayas, communes}) {
     if (blocked) return;
     window.history.pushState(null, null, window.location.href);
     const handlePopState = () => {
+      if (submittingOrderRef.current) return;
       if (!offerTriggeredRef.current) {
         offerTriggeredRef.current = true;
         injectLeavePopup();
@@ -117,6 +118,7 @@ export default function ProductClient({ product, wilayas, communes}) {
   useEffect(() => {
     if (blocked) return;
     const handleVisibility = () => {
+      if (submittingOrderRef.current) return;
       if (document.hidden && !offerTriggeredRef.current) {
         offerTriggeredRef.current = true;
         injectLeavePopup();
@@ -137,6 +139,7 @@ export default function ProductClient({ product, wilayas, communes}) {
     if (blocked) return;
     let scrollTimer;
     const handleScroll = () => {
+      if (submittingOrderRef.current) return;
       const currentY = window.scrollY;
       if (currentY < 80 && currentY < lastScrollY.current - 8 && !offerTriggeredRef.current && Date.now() - pageEnterRef.current > 4000) {
         clearTimeout(scrollTimer);
@@ -163,6 +166,7 @@ export default function ProductClient({ product, wilayas, communes}) {
   useEffect(() => {
     if (blocked) return;
     const handleBeforeUnload = (e) => {
+      if (submittingOrderRef.current) return;
       if (!offerTriggeredRef.current) {
         offerTriggeredRef.current = true;
         injectLeavePopup();
@@ -181,6 +185,7 @@ export default function ProductClient({ product, wilayas, communes}) {
   const prevTierRef = useRef(false);
   const audioCtxRef = useRef(null);
   const submittedRef = useRef(false);
+  const submittingOrderRef = useRef(false);
 
   const variants = product.slug === 'cahier-magique' ? [
     { label: 'A5', price: 1700, desc: 'صغير' },
@@ -322,6 +327,7 @@ export default function ProductClient({ product, wilayas, communes}) {
         }, { eventID: orderData.capiEventId });
       }
 
+      submittingOrderRef.current = true;
       const merciParams = new URLSearchParams({
         order: orderData.number, name: product.name,
         qty: qty.toString(), total: total.toString(),
