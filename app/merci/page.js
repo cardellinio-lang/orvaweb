@@ -62,7 +62,7 @@ function MerciContent() {
   useEffect(() => {
     if (!showMsg) return;
     const redirectTimer = setTimeout(() => {
-      window.location.href = '/products/etar-sanaouati';
+      window.location.href = '/';
     }, 4000);
     return () => clearTimeout(redirectTimer);
   }, [showMsg]);

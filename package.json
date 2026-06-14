@@ -1,5 +1,5 @@
 {
-  "name": "monsite",
+  "name": "orvaweb",
   "private": true,
   "scripts": {
     "dev": "next dev",

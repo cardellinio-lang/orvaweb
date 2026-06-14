@@ -64,11 +64,11 @@ export default function ConfirmOrder({ params }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet" />
-        <title>تأكيد الطلب - ibishop</title>
-        <meta property="og:title" content="✅ تأكيد طلبك - ibishop" />
+        <title>تأكيد الطلب - orva.dz</title>
+        <meta property="og:title" content="✅ تأكيد طلبك - orva.dz" />
         <meta property="og:description" content="اضغط لتأكيد طلبك بكل أمان. تأكيد فوري بدون انتظار." />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://ibishopweb-2-0.vercel.app/logo-final.png" />
+        <meta property="og:image" content="https://orvaweb.vercel.app/logo-orva.png" />
         <meta property="og:image:width" content="400" />
         <meta property="og:image:height" content="400" />
         <meta name="twitter:card" content="summary_large_image" />

@@ -20,7 +20,7 @@ const sections = [
   {
     id: 'story', emoji: '📖', title: 'قصتنا',
     color: COLORS.purple,
-    text: 'بدأ ibishop كحلم صغير في غرفة مليئة بالألوان والضحك. اليوم، نحن عائلة من الآباء والمربين الذين يؤمنون أن كل طفل يستحق ألعاباً تغذي خياله وتصنع ابتسامته.',
+    text: 'بدأ orva.dz كحلم صغير في غرفة مليئة بالألوان والضحك. اليوم، نحن عائلة من الآباء والمربين الذين يؤمنون أن كل طفل يستحق ألعاباً تغذي خياله وتصنع ابتسامته.',
   },
   {
     id: 'values', emoji: '✨', title: 'قيمنا',
@@ -343,7 +343,7 @@ export default function APropos() {
               background: 'linear-gradient(135deg, #E54E19, #d4a5e8, #a8d8ea)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             }}>
-              عالم ibishop السحري
+              عالم orva.dz السحري
             </h1>
             <p style={{
               fontSize: 15, color: '#6e6e73', marginBottom: 4,

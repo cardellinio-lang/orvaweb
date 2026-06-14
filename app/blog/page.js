@@ -213,12 +213,12 @@ export default function BlogPage() {
               transition: 'all 0.3s ease',
             }}>i</div>
             <span style={{ fontWeight: 900, fontSize: scrolled ? 18 : 20, color: '#1C1008', transition: 'all 0.3s ease' }}>
-              ibishop
+              orva.dz
             </span>
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             <div style={{ display: 'flex', gap: 16 }}>
-              {['المقالات', 'الأعمار', 'الفئات', 'عن ibishop'].map((item, i) => (
+              {['المقالات', 'الأعمار', 'الفئات', 'عن orva.dz'].map((item, i) => (
                 <a key={i} href={['/blog', '/#categories', '/#', '/a-propos'][i]} style={{
                   fontWeight: 700, fontSize: 14, color: '#1C1008', opacity: 0.7,
                   transition: 'opacity 0.2s', textDecoration: 'none',
@@ -800,7 +800,7 @@ export default function BlogPage() {
                   alignItems: 'center', justifyContent: 'center',
                   fontWeight: 900, color: '#fff', fontSize: 18,
                 }}>i</div>
-                <span style={{ fontWeight: 900, fontSize: 20, color: '#fff' }}>ibishop</span>
+                <span style={{ fontWeight: 900, fontSize: 20, color: '#fff' }}>orva.dz</span>
               </div>
               <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>
                 ألعاب تعليمية وتربوية — صنع في الجزائر 🇩🇿
@@ -838,8 +838,8 @@ export default function BlogPage() {
               <h5 style={{ fontWeight: 800, fontSize: 15, color: '#fff', marginBottom: 14 }}>تواصل معنا</h5>
               <div style={{ display: 'flex', gap: 10 }}>
                 {[
-                  { label: 'Facebook', href: 'https://www.facebook.com/ibishop.boutique' },
-                  { label: 'Instagram', href: 'https://instagram.com/ibishop.dz' },
+                  { label: 'Facebook', href: 'https://www.facebook.com/orva.dz' },
+                  { label: 'Instagram', href: 'https://instagram.com/orva.dz' },
                   { label: 'TikTok', href: '#' },
                 ].map((s, i) => (
                   <a key={i} href={s.href} target="_blank" rel="noopener" style={{
@@ -862,7 +862,7 @@ export default function BlogPage() {
             paddingTop: 20, textAlign: 'center',
             color: 'rgba(255,255,255,0.3)', fontSize: 13,
           }}>
-            © 2026 ibishop-dz.com — tous droits réservés
+            © 2026 orva.dz — tous droits réservés
           </div>
         </div>
       </footer>
