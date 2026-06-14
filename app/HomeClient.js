@@ -2,52 +2,6 @@
 
 import { useState, useMemo } from 'react';
 
-const TAGS = {
-  'word-box': ['خشبية', 'عربية'],
-  'plateau-lettres': ['خشبية', 'عربية'],
-  'lettres-arabes': ['خشبية', 'عربية'],
-  'echecs-bois-xo': ['خشبية'],
-  'jeu-emotions-bois': ['خشبية'],
-  'tracing-board': ['خشبية', '3-5'],
-  'planche-developpement-cerebral-neuro': ['خشبية'],
-  'tangram-mosaique-bois-120-pieces': ['خشبية'],
-  '20-pochoirs-en-bois-montessori-pour-dessin-1779287853247': ['خشبية', '3-5'],
-  'scenarios-anglais': ['إنجليزية'],
-  'cartes-anglais-100': ['إنجليزية'],
-  'jeu-apprendre-anglais-10-jeux-cartes': ['إنجليزية'],
-  'puzzles-educatifs': ['ألغاز'],
-  'jeu-differences-32': ['ألغاز', '3-5'],
-  'jeu-tri-animaux': ['ألغاز', '3-5'],
-  'quisuisje': ['ألغاز'],
-  'spelling-cubes': ['ألغاز', 'إنجليزية'],
-  'jeu-multiplication-montessori-tableau': ['ألغاز'],
-  'cartes-questions-wh': ['ألغاز'],
-  'flashcards-questions': ['ألغاز', '3-5'],
-  'cadre-magnetique-a4': [],
-  'cadre-dessin-enfant-a4': [],
-  'cahier-magique': ['3-5'],
-  'cadre': [],
-  'wiklo': [],
-  'tableau-pliable-reglable-hauteur-oxybul': [],
-  'coffret-perles-fleuries-oxybul': [],
-  'cartes-masculin-feminin-couleurs': ['نطق', 'عربية', '3-5'],
-  'cartes-association': ['نطق', 'عربية', '3-5'],
-  'cartes-defi': ['نطق', 'عربية', '3-5'],
-  'cadre-decor-orthophoniste': ['ديكور'],
-  'l3ba-taalom-loughat': ['خشبية', 'عربية', '3-5'],
-};
-
-const FILTERS = [
-  { key: 'all', label: 'الكل' },
-  { key: 'نطق', label: 'نطق' },
-  { key: 'خشبية', label: 'خشبية' },
-  { key: 'إنجليزية', label: 'إنجليزية' },
-  { key: 'عربية', label: 'عربية' },
-  { key: 'ألغاز', label: 'ألغاز' },
-  { key: '3-5', label: '3-5 سنوات' },
-  { key: 'ديكور', label: 'ديكور' },
-];
-
 const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
 function ProductCard({ p, now }) {
@@ -103,51 +57,32 @@ function ProductCard({ p, now }) {
 }
 
 export default function HomeClient({ products }) {
-  const [active, setActive] = useState('all');
   const now = useMemo(() => Date.now(), []);
   const [showAll, setShowAll] = useState(false);
-
-  const filtered = active === 'all'
-    ? products
-    : products.filter(p => (TAGS[p.slug] || []).includes(active));
 
   return (
     <div>
       {/* Products Section */}
       <div style={{ marginBottom: 36 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 20, marginTop: 32 }}>
-          {FILTERS.map(f => (
-            <button key={f.key} onClick={() => { setActive(f.key); setShowAll(false); }}
-                    style={{
-                      padding: '8px 18px', borderRadius: 20, fontSize: 14, fontWeight: 800,
-                      border: 'none', cursor: 'pointer', transition: 'all .15s',
-                      background: active === f.key ? '#E54E19' : '#e8e8ed',
-                      color: active === f.key ? '#fff' : '#1d1d1f',
-                    }}>
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        {filtered.length === 0 ? (
+        {products.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 60, color: '#8e8e93' }}>
             لا توجد منتجات في هذا القسم
           </div>
         ) : (
           <div className="grid">
-            {(showAll ? filtered : filtered.slice(0, 8)).map(p => <ProductCard key={p.id} p={p} now={now} />)}
+            {(showAll ? products : products.slice(0, 8)).map(p => <ProductCard key={p.id} p={p} now={now} />)}
           </div>
         )}
 
-        {filtered.length > 8 && !showAll && (
+        {products.length > 8 && !showAll && (
           <div style={{ textAlign: 'center', marginTop: 20 }}>
             <button onClick={() => setShowAll(true)}
               style={{
-                background: 'transparent', border: '2px solid #E54E19', color: '#E54E19',
+                background: 'transparent', border: '2px solid #0a19a8', color: '#0a19a8',
                 padding: '10px 28px', borderRadius: 12, fontWeight: 800, fontSize: 15,
                 cursor: 'pointer',
               }}>
-              عرض الكل ({filtered.length})
+              عرض الكل ({products.length})
             </button>
           </div>
         )}
@@ -155,20 +90,16 @@ export default function HomeClient({ products }) {
 
       {/* Stats Strip */}
       <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
+        display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16,
         marginBottom: 36, textAlign: 'center',
       }}>
         <div style={{ background: '#fff', borderRadius: 20, padding: '20px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#E54E19' }}>{products.length}+</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#0a19a8' }}>{products.length}+</div>
           <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>منتج و لعبة</div>
         </div>
         <div style={{ background: '#fff', borderRadius: 20, padding: '20px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
           <div style={{ fontSize: 28, fontWeight: 900, color: '#4CAF50' }}>69</div>
           <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>ولاية توصيل</div>
-        </div>
-        <div style={{ background: '#fff', borderRadius: 20, padding: '20px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#E54E19' }}>10</div>
-          <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>مقال تعليمي</div>
         </div>
       </div>
     </div>
