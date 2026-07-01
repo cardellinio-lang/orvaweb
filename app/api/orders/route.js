@@ -61,6 +61,8 @@ export async function POST(req) {
       total: orderTotal,
       delivery: deliveryPrice,
       deliveryType: data.deliveryType || 'home',
+      customNames: data.customNames || null,
+      customDate: data.customDate || null,
       status: 'pending',
       items: {
         create: { productId: product.id, name: itemName, price: itemPrice, quantity: data.qty },
@@ -100,6 +102,8 @@ export async function POST(req) {
     deliveryType: data.deliveryType || 'home',
     deliveryPrice,
     total: orderTotal,
+    customNames: data.customNames,
+    customDate: data.customDate,
   }));
 
   const sheetUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
@@ -115,6 +119,7 @@ export async function POST(req) {
           product: product.name, quantity: data.qty, price: product.price,
           delivery: deliveryPrice, total, status: 'pending',
           date: new Date().toISOString(),
+          customNames: data.customNames || '', customDate: data.customDate || '',
         }),
       }).catch(() => {});
     } catch {}

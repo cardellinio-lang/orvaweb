@@ -41,6 +41,8 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
   const [phone, setPhone] = useState('');
   const [wilayaId, setWilayaId] = useState('');
   const [communeId, setCommuneId] = useState('');
+  const [customNames, setCustomNames] = useState('');
+  const [customDate, setCustomDate] = useState('');
   const [deliveryType, setDeliveryType] = useState('home');
   const [error, setError] = useState('');
   const [scrolled, setScrolled] = useState(false);
@@ -132,6 +134,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
           productId: product.id, qty, customer, phone,
           wilayaId: Number(wilayaId), communeId: Number(communeId),
           address: '', deliveryType, pageUrl: window.location.href,
+          customNames, customDate,
         }),
       });
       if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'خطأ'); }
@@ -268,6 +271,26 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
                          style={{ width: '100%', padding: '12px 16px', border: '1.5px solid #d2d2d7', borderRadius: 12, fontSize: 16, textAlign: 'right', background: '#fff' }} />
                   <div style={{ fontSize: 12, color: '#8e8e93', marginTop: 4 }}>سنقوم بالاتصال بك عبر هذا الرقم لتأكيد الطلب.</div>
                 </div>
+
+                {/* Customization for canvas frame */}
+                {product.slug === 'canvas-frame-55x70-wedding-names-date' && (
+                  <div style={{ marginBottom: 20, background: '#fff7f7', borderRadius: 14, padding: 16, border: '1px dashed #a1051066' }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 900, color: '#a10510', marginBottom: 12, textAlign: 'center' }}>✏️ تخصيص</h3>
+                    <div style={{ marginBottom: 12 }}>
+                      <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>اسماء العروسين</label>
+                      <input value={customNames} onChange={e => setCustomNames(e.target.value)}
+                             placeholder="اكتب هنا"
+                             className="orva-input"
+                             style={{ width: '100%', padding: '12px 16px', border: '1.5px solid #d2d2d7', borderRadius: 12, fontSize: 16, background: '#fff' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>تاريخ الزفاف</label>
+                      <input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)}
+                             className="orva-input"
+                             style={{ width: '100%', padding: '12px 16px', border: '1.5px solid #d2d2d7', borderRadius: 12, fontSize: 16, background: '#fff' }} />
+                    </div>
+                  </div>
+                )}
 
                 {/* Wilaya */}
                 <div style={{ marginBottom: 16 }}>
