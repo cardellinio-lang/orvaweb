@@ -56,37 +56,86 @@ function ProductCard({ p, now }) {
   );
 }
 
+const CATEGORY_LABELS = {
+  'الجزائر / القصبة': { icon: '🇩🇿', label: 'الجزائر / القصبة' },
+  'فن ورسم': { icon: '🎨', label: 'فن ورسم' },
+  'ثنائي': { icon: '💑', label: 'ثنائي' },
+  'مطبخ': { icon: '🍳', label: 'مطبخ' },
+  'أطفال': { icon: '🧸', label: 'أطفال' },
+  'إسلامي / عربي': { icon: '🕌', label: 'إسلامي / عربي' },
+  'طبي': { icon: '🏥', label: 'طبي' },
+  'طبيعة وورود': { icon: '🌸', label: 'طبيعة وورود' },
+  'باقة 6 لوحات': { icon: '📦', label: 'باقة 6 لوحات' },
+  'ثلاثي وثنائي': { icon: '🖼️', label: 'ثلاثي وثنائي' },
+  'تجريدي': { icon: '✨', label: 'تجريدي' },
+  'orva': { icon: '🎁', label: 'هدايا الزفاف' },
+};
+
 export default function HomeClient({ products }) {
   const now = useMemo(() => Date.now(), []);
-  const [showAll, setShowAll] = useState(false);
+  const [expandedCat, setExpandedCat] = useState(null);
+
+  const grouped = useMemo(() => {
+    const map = {};
+    for (const p of products) {
+      const cat = p.category || 'أخرى';
+      if (!map[cat]) map[cat] = [];
+      map[cat].push(p);
+    }
+    return Object.entries(map).sort((a, b) => b[1].length - a[1].length);
+  }, [products]);
+
+  const allCount = products.length;
 
   return (
     <div>
-      {/* Products Section */}
-      <div style={{ marginBottom: 36 }}>
-        {products.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 60, color: '#8e8e93' }}>
-            لا توجد منتجات في هذا القسم
-          </div>
-        ) : (
-          <div className="grid">
-            {(showAll ? products : products.slice(0, 8)).map(p => <ProductCard key={p.id} p={p} now={now} />)}
-          </div>
-        )}
-
-        {products.length > 8 && !showAll && (
-          <div style={{ textAlign: 'center', marginTop: 20 }}>
-            <button onClick={() => setShowAll(true)}
-              style={{
-                background: 'transparent', border: '2px solid #a10510', color: '#a10510',
-                padding: '10px 28px', borderRadius: 12, fontWeight: 800, fontSize: 15,
-                cursor: 'pointer',
-              }}>
-              عرض الكل ({products.length})
-            </button>
-          </div>
-        )}
+      {/* Hero */}
+      <div style={{ textAlign: 'center', marginBottom: 24, padding: '20px 0' }}>
+        <h1 style={{ fontSize: 26, fontWeight: 900, color: '#1d1d1f', margin: 0 }}>
+          أورڤا ديكو
+        </h1>
+        <p style={{ color: '#6e6e73', margin: '8px 0 0', fontSize: 15 }}>
+          لوحات ديكور عصرية لمنزلك ومكتبك
+        </p>
       </div>
+
+      {/* Category Sections */}
+      {grouped.map(([cat, items]) => {
+        const meta = CATEGORY_LABELS[cat] || { icon: '📋', label: cat };
+        return (
+          <div key={cat} style={{ marginBottom: 32 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              marginBottom: 12, padding: '0 4px',
+            }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: '#1d1d1f', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>{meta.icon}</span> {meta.label}
+                <span style={{ fontSize: 13, color: '#8e8e93', fontWeight: 600 }}>({items.length})</span>
+              </h2>
+              {items.length > 4 && (
+                <button onClick={() => setExpandedCat(expandedCat === cat ? null : cat)}
+                  style={{
+                    background: 'none', border: 'none', color: '#a10510', fontWeight: 700, fontSize: 13,
+                    cursor: 'pointer', padding: 0,
+                  }}>
+                  {expandedCat === cat ? 'أقل' : 'عرض الكل'}
+                </button>
+              )}
+            </div>
+            <div className="grid">
+              {(expandedCat === cat ? items : items.slice(0, 4)).map(p => (
+                <ProductCard key={p.id} p={p} now={now} />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+
+      {grouped.length === 0 && (
+        <div style={{ textAlign: 'center', padding: 60, color: '#8e8e93' }}>
+          قريباً... منتجات جديدة قادمة
+        </div>
+      )}
 
       {/* Stats Strip */}
       <div style={{
@@ -94,12 +143,12 @@ export default function HomeClient({ products }) {
         marginBottom: 36, textAlign: 'center',
       }}>
         <div style={{ background: '#fff', borderRadius: 20, padding: '20px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#a10510' }}>{products.length}+</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#a10510' }}>{allCount}+</div>
           <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>منتج</div>
         </div>
         <div style={{ background: '#fff', borderRadius: 20, padding: '20px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#4CAF50' }}>69</div>
-          <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>ولاية توصيل</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#4CAF50' }}>{grouped.length}</div>
+          <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>قسم</div>
         </div>
       </div>
     </div>
