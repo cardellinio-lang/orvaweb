@@ -69,6 +69,7 @@ const CATEGORY_LABELS = {
   'ثلاثي وثنائي': { icon: '🖼️', label: 'ثلاثي وثنائي' },
   'تجريدي': { icon: '✨', label: 'تجريدي' },
   'orva': { icon: '🎁', label: 'هدايا الزفاف' },
+  'هدايا': { icon: '🎀', label: 'هدايا فاخرة' },
 };
 
 export default function HomeClient({ products }) {
@@ -90,12 +91,12 @@ export default function HomeClient({ products }) {
   return (
     <div>
       {/* Hero */}
-      <div style={{ textAlign: 'center', marginBottom: 24, padding: '20px 0' }}>
-        <h1 style={{ fontSize: 26, fontWeight: 900, color: '#1d1d1f', margin: 0 }}>
-          أورڤا ديكو
+      <div style={{ textAlign: 'center', marginBottom: 24, padding: '24px 0' }}>
+        <h1 style={{ fontSize: 26, fontWeight: 900, color: '#1d1d1f', margin: 0, lineHeight: 1.4 }}>
+          لأن أجمل الهدايا تُصنع خصيصًا
         </h1>
-        <p style={{ color: '#6e6e73', margin: '8px 0 0', fontSize: 15 }}>
-          لوحات ديكور عصرية لمنزلك ومكتبك
+        <p style={{ color: '#6e6e73', margin: '10px 0 0', fontSize: 15, lineHeight: 1.7 }}>
+          نُصمم هدايا وإطارات زفاف مخصصة بأسماء العروسين وتاريخ المناسبة، لتبقى ذكرى جميلة تزيّن كل بيت.
         </p>
       </div>
 

@@ -59,11 +59,8 @@ const products = [
 async function main() {
   const count = await prisma.product.count();
   if (count > 0) {
-    console.log(`⚠️ Database already has ${count} products — deleting all and re-seeding`);
-    await prisma.orderItem.deleteMany();
-    await prisma.review.deleteMany();
-    await prisma.product.deleteMany();
-    console.log('🗑️ Deleted all existing products');
+    console.log(`⚠️ Database already has ${count} products — skipping seed to preserve data (images, colors, etc.)`);
+    return;
   }
 
   for (const p of products) {
