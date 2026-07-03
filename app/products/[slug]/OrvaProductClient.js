@@ -55,7 +55,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
     { label: 'أصفر', value: 'jaune', color: '#fdd835' },
     { label: 'أبيض', value: 'blanc', color: '#ffffff' },
   ] : null;
-  const girlySizes = product.slug === 'girly-tshirt' ? ['S', 'M', 'L', 'XL'] : null;
+  const girlySizes = (product.slug === 'girly-tshirt' || product.slug === 'ensemble-performance-ete') ? ['S', 'M', 'L', 'XL'] : null;
   const [girlyColor, setGirlyColor] = useState(girlyColors ? girlyColors[0].value : null);
   const [girlySize, setGirlySize] = useState(girlySizes ? girlySizes[1] : null);
 
