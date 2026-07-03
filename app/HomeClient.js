@@ -6,6 +6,7 @@ const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
 function ProductCard({ p, now }) {
   const imgs = JSON.parse(p.images || '[]');
+  const [showSecond, setShowSecond] = useState(false);
   const discount = p.oldPrice ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
   const isNew = now - new Date(p.createdAt).getTime() < MONTH_MS;
   const c = p.color || '#000000';
@@ -18,11 +19,19 @@ function ProductCard({ p, now }) {
          boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
          transition: 'transform 0.2s, box-shadow 0.2s',
        }}>
-      <div style={{ position: 'relative', aspectRatio: '1', background: '#f5f5f7', overflow: 'hidden' }}>
-        <img src={imgs[0] || 'https://placehold.co/400x400/f5f5f7/8e8e93?text=P'}
+      <div style={{ position: 'relative', aspectRatio: '1', background: '#f5f5f7', overflow: 'hidden' }}
+           onMouseEnter={() => setShowSecond(true)}
+           onMouseLeave={() => setShowSecond(false)}
+           onTouchStart={() => setShowSecond(prev => !prev)}>
+        <img src={showSecond && imgs[1] ? imgs[1] : imgs[0] || 'https://placehold.co/400x400/f5f5f7/8e8e93?text=P'}
              alt={p.name}
-             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        {discount > 0 && (
+             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity 0.3s' }} />
+        {p.stock === 0 && (
+          <span style={{ position: 'absolute', top: 8, left: 8, background: '#3a59d1', color: '#fff', fontSize: 10, fontWeight: 800, padding: '4px 8px', borderRadius: 20 }}>
+            نفذ
+          </span>
+        )}
+        {p.stock !== 0 && discount > 0 && (
           <span style={{ position: 'absolute', top: 8, right: 8, background: c, color: '#fff', fontSize: 11, fontWeight: 900, padding: '4px 10px', borderRadius: 20 }}>
             -{discount}%
           </span>
@@ -57,24 +66,13 @@ function ProductCard({ p, now }) {
 }
 
 const CATEGORY_LABELS = {
-  'الجزائر / القصبة': { icon: '🇩🇿', label: 'الجزائر / القصبة' },
-  'فن ورسم': { icon: '🎨', label: 'فن ورسم' },
-  'ثنائي': { icon: '💑', label: 'ثنائي' },
-  'مطبخ': { icon: '🍳', label: 'مطبخ' },
-  'أطفال': { icon: '🧸', label: 'أطفال' },
-  'إسلامي / عربي': { icon: '🕌', label: 'إسلامي / عربي' },
-  'طبي': { icon: '🏥', label: 'طبي' },
-  'طبيعة وورود': { icon: '🌸', label: 'طبيعة وورود' },
-  'باقة 6 لوحات': { icon: '📦', label: 'باقة 6 لوحات' },
-  'ثلاثي وثنائي': { icon: '🖼️', label: 'ثلاثي وثنائي' },
-  'تجريدي': { icon: '✨', label: 'تجريدي' },
-  'orva': { icon: '🎁', label: 'هدايا الزفاف' },
-  'هدايا': { icon: '🎀', label: 'هدايا فاخرة' },
+  'orva': { icon: '🏋️‍♀️', label: 'رياضة نسائية' },
+  'ملابس': { icon: '👚', label: 'ملابس رياضية' },
+  'إكسسوارات': { icon: '🎽', label: 'إكسسوارات رياضية' },
 };
 
 export default function HomeClient({ products }) {
   const now = useMemo(() => Date.now(), []);
-  const [expandedCat, setExpandedCat] = useState(null);
 
   const grouped = useMemo(() => {
     const map = {};
@@ -93,10 +91,10 @@ export default function HomeClient({ products }) {
       {/* Hero */}
       <div style={{ textAlign: 'center', marginBottom: 24, padding: '24px 0' }}>
         <h1 style={{ fontSize: 26, fontWeight: 900, color: '#1d1d1f', margin: 0, lineHeight: 1.4 }}>
-          لأن أجمل الهدايا تُصنع خصيصًا
+          لأن رياضتكِ تستحق الأفضل
         </h1>
         <p style={{ color: '#6e6e73', margin: '10px 0 0', fontSize: 15, lineHeight: 1.7 }}>
-          نُصمم هدايا وإطارات زفاف مخصصة بأسماء العروسين وتاريخ المناسبة، لتبقى ذكرى جميلة تزيّن كل بيت.
+          مستلزمات رياضية نسائية بجودة عالية — ملابس، إكسسوارات، و معدات رياضية للمرأة الجزائرية.
         </p>
       </div>
 
@@ -113,18 +111,9 @@ export default function HomeClient({ products }) {
                 <span>{meta.icon}</span> {meta.label}
                 <span style={{ fontSize: 13, color: '#8e8e93', fontWeight: 600 }}>({items.length})</span>
               </h2>
-              {items.length > 4 && (
-                <button onClick={() => setExpandedCat(expandedCat === cat ? null : cat)}
-                  style={{
-                    background: 'none', border: 'none', color: '#a10510', fontWeight: 700, fontSize: 13,
-                    cursor: 'pointer', padding: 0,
-                  }}>
-                  {expandedCat === cat ? 'أقل' : 'عرض الكل'}
-                </button>
-              )}
             </div>
             <div className="grid">
-              {(expandedCat === cat ? items : items.slice(0, 4)).map(p => (
+              {items.map(p => (
                 <ProductCard key={p.id} p={p} now={now} />
               ))}
             </div>
@@ -144,12 +133,12 @@ export default function HomeClient({ products }) {
         marginBottom: 36, textAlign: 'center',
       }}>
         <div style={{ background: '#fff', borderRadius: 20, padding: '20px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#a10510' }}>{allCount}+</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#3a59d1' }}>{allCount}+</div>
           <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>منتج</div>
         </div>
         <div style={{ background: '#fff', borderRadius: 20, padding: '20px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#4CAF50' }}>{grouped.length}</div>
-          <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>قسم</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#4CAF50' }}>100%</div>
+          <div style={{ fontSize: 13, color: '#6e6e73', fontWeight: 600, marginTop: 4 }}>نسائي</div>
         </div>
       </div>
     </div>

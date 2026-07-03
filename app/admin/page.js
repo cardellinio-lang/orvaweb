@@ -70,7 +70,7 @@ export default function AdminPage() {
                placeholder="كلمة المرور"
                style={{ width: '100%', padding: '14px 16px', border: '1.5px solid #d2d2d7', borderRadius: 12, fontSize: 16, marginBottom: 16 }} />
         <button onClick={login}
-                style={{ width: '100%', padding: '14px', background: '#a10510', color: '#fff', fontSize: 16, fontWeight: 700, borderRadius: 12, border: 'none', cursor: 'pointer' }}>
+                style={{ width: '100%', padding: '14px', background: '#3a59d1', color: '#fff', fontSize: 16, fontWeight: 700, borderRadius: 12, border: 'none', cursor: 'pointer' }}>
           دخول
         </button>
         {msg && <p style={{ textAlign: 'center', marginTop: 12, fontSize: 14 }}>{msg}</p>}
@@ -95,7 +95,7 @@ export default function AdminPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {products.map(product => {
             const t = (typeof product.theme === 'object' && product.theme) ? product.theme : {};
-            const c = product.color || '#a10510';
+            const c = product.color || '#3a59d1';
             return (
               <ProductCard key={product.id} product={product} theme={t} color={c}
                            saving={saving === product.id}
@@ -109,17 +109,17 @@ export default function AdminPage() {
 }
 
 function ProductCard({ product, theme, color, saving, onSave }) {
-  const [btnBg, setBtnBg] = useState(theme.btnBg || color || '#a10510');
+  const [btnBg, setBtnBg] = useState(theme.btnBg || color || '#3a59d1');
   const [btnText, setBtnText] = useState(theme.btnText || '#ffffff');
   const [btnHover, setBtnHover] = useState(theme.btnHover || '');
-  const [priColor, setPriColor] = useState(color || '#a10510');
+  const [priColor, setPriColor] = useState(color || '#3a59d1');
 
   const handleSave = () => {
     const newTheme = {};
-    if (btnBg !== (product.color || '#a10510')) newTheme.btnBg = btnBg;
+    if (btnBg !== (product.color || '#3a59d1')) newTheme.btnBg = btnBg;
     if (btnText !== '#ffffff') newTheme.btnText = btnText;
     if (btnHover) newTheme.btnHover = btnHover;
-    const newColor = priColor !== '#a10510' ? priColor : undefined;
+    const newColor = priColor !== '#3a59d1' ? priColor : undefined;
     onSave(newTheme, newColor);
   };
 
@@ -144,7 +144,7 @@ function ProductCard({ product, theme, color, saving, onSave }) {
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <button onClick={handleSave} disabled={saving}
-                style={{ padding: '12px 24px', background: '#a10510', color: '#fff', fontSize: 14, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>
+                style={{ padding: '12px 24px', background: '#3a59d1', color: '#fff', fontSize: 14, fontWeight: 700, borderRadius: 10, border: 'none', cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>
           {saving ? 'جاري الحفظ...' : '💾 حفظ'}
         </button>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -173,7 +173,7 @@ function ColorField({ label, value, onChange, placeholder }) {
 }
 
 function darken(hex, amount = 30) {
-  if (!hex) return '#80040c';
+  if (!hex) return '#c2185b';
   hex = hex.replace('#', '');
   const r = Math.max(0, parseInt(hex.substring(0, 2), 16) - amount);
   const g = Math.max(0, parseInt(hex.substring(2, 4), 16) - amount);

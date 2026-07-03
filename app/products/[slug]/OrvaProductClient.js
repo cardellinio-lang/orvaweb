@@ -17,7 +17,7 @@ const WILAYA_AR = {
 };
 
 function darken(hex, amount = 30) {
-  if (!hex) return '#80040c';
+  if (!hex) return '#c2185b';
   hex = hex.replace('#', '');
   const r = Math.max(0, parseInt(hex.substring(0, 2), 16) - amount);
   const g = Math.max(0, parseInt(hex.substring(2, 4), 16) - amount);
@@ -26,7 +26,7 @@ function darken(hex, amount = 30) {
 }
 
 function hexToRgba(hex, alpha = 1) {
-  if (!hex) return `rgba(161,5,16,${alpha})`;
+  if (!hex) return `rgba(58,89,209,${alpha})`;
   hex = hex.replace('#', '');
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
@@ -49,7 +49,17 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
   const [blocked, setBlocked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [liveCount, setLiveCount] = useState(14 + Math.floor(Math.random() * 6));
-  const c = product.color || '#a10510';
+
+  const girlyColors = product.slug === 'girly-tshirt' ? [
+    { label: 'روز', value: 'rose', color: '#3a59d1' },
+    { label: 'أصفر', value: 'jaune', color: '#fdd835' },
+    { label: 'أبيض', value: 'blanc', color: '#ffffff' },
+  ] : null;
+  const girlySizes = product.slug === 'girly-tshirt' ? ['S', 'M', 'L', 'XL'] : null;
+  const [girlyColor, setGirlyColor] = useState(girlyColors ? girlyColors[0].value : null);
+  const [girlySize, setGirlySize] = useState(girlySizes ? girlySizes[1] : null);
+
+  const c = product.color || '#3a59d1';
   const t = (typeof product.theme === 'object' && product.theme) ? product.theme : {};
   const btnBg = t.btnBg || c;
   const btnText = t.btnText || '#fff';
@@ -130,12 +140,13 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: product.id, qty, customer, phone,
-          wilayaId: Number(wilayaId), communeId: Number(communeId),
-          address: '', deliveryType, pageUrl: window.location.href,
-          customNames, customDate,
-        }),
+          body: JSON.stringify({
+            productId: product.id, qty, customer, phone,
+            wilayaId: Number(wilayaId), communeId: Number(communeId),
+            address: '', deliveryType, pageUrl: window.location.href,
+            customNames: (girlyColor && girlySize) ? `اللون: ${girlyColors.find(c => c.value === girlyColor)?.label || girlyColor} / المقاس: ${girlySize}` : customNames,
+            customDate,
+          }),
       });
       if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'خطأ'); }
       const orderData = await res.json();
@@ -185,12 +196,15 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
       `}} />
 
       {/* COD Banner */}
+      {product.stock !== 0 && (
       <div style={{ background: c, color: '#fff', borderRadius: 0, padding: '14px 20px', textAlign: 'center', fontWeight: 900, fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
         <span style={{ fontSize: 26 }}>🚚</span>
         الدفع عند الاستلام
       </div>
+      )}
 
       {/* Social proof */}
+      {product.stock !== 0 && (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
         <span style={{
           width: 12, height: 12, borderRadius: '50%', background: '#22c55e', display: 'inline-block',
@@ -199,6 +213,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
         }} />
         <span style={{ fontSize: 15, fontWeight: 800, color: '#16a34a' }}>{liveCount} شخص يشترون الآن</span>
       </div>
+      )}
 
       <div className="lg-flex-row" style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'flex-start' }}>
         {/* Left column - Image */}
@@ -237,7 +252,8 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
                     {product.price.toLocaleString()} <span style={{ fontSize: 16 }}>د.ج</span>
                   </span>
                 </div>
-                {discount > 0 && <span style={{ display: 'inline-block', background: c, color: '#fff', fontSize: 11, padding: '3px 10px', borderRadius: 20, fontWeight: 800, marginTop: 8 }}>🔥 خصم {discount}%</span>}
+                {product.stock === 0 && <span style={{ display: 'inline-block', background: '#ef4444', color: '#fff', fontSize: 12, padding: '4px 14px', borderRadius: 20, fontWeight: 900, marginTop: 8 }}>نفذ من المخزون</span>}
+                {product.stock !== 0 && discount > 0 && <span style={{ display: 'inline-block', background: c, color: '#fff', fontSize: 11, padding: '3px 10px', borderRadius: 20, fontWeight: 800, marginTop: 8 }}>🔥 خصم {discount}%</span>}
               </div>
 
               {product.description && <p style={{ color: '#6e6e73', marginTop: 12, fontSize: 14, lineHeight: 1.6, textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: product.description }} />}
@@ -249,6 +265,20 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
                   <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
                   <div style={{ fontSize: 18, fontWeight: 900, color: '#dc2626', marginBottom: 8, lineHeight: 1.6 }}>
                     عذراً، هذه الصفحة غير متاحة حالياً
+                  </div>
+                </div>
+              ) : product.stock === 0 ? (
+                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 48, marginBottom: 16 }}>😔</div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: '#ef4444', marginBottom: 8, lineHeight: 1.6 }}>
+                    نفذ من المخزون
+                  </div>
+                  <div style={{ fontSize: 14, color: '#6e6e73', lineHeight: 1.6 }}>
+                    هذا المنتج غير متوفر حالياً. تابعينا على فيسبوك وإنستغرام للإعلام عند توفر منتجات جديدة.
+                  </div>
+                  <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 12 }}>
+                    <a href="https://www.facebook.com/orva.dz" target="_blank" rel="noopener" style={{ background: '#1877f2', color: '#fff', padding: '10px 20px', borderRadius: 12, textDecoration: 'none', fontWeight: 800, fontSize: 14 }}>فيسبوك</a>
+                    <a href="https://instagram.com/orva.dz" target="_blank" rel="noopener" style={{ background: '#e4405f', color: '#fff', padding: '10px 20px', borderRadius: 12, textDecoration: 'none', fontWeight: 800, fontSize: 14 }}>إنستغرام</a>
                   </div>
                 </div>
               ) : (
@@ -274,8 +304,8 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
 
                 {/* Customization for canvas frame */}
                 {product.slug === 'canvas-frame-55x70-wedding-names-date' && (
-                  <div style={{ marginBottom: 20, background: '#fff7f7', borderRadius: 14, padding: 16, border: '1px dashed #a1051066' }}>
-                    <h3 style={{ fontSize: 15, fontWeight: 900, color: '#a10510', marginBottom: 12, textAlign: 'center' }}>✏️ تخصيص</h3>
+                  <div style={{ marginBottom: 20, background: '#fff0f5', borderRadius: 14, padding: 16, border: '1px dashed #3a59d166' }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 900, color: '#3a59d1', marginBottom: 12, textAlign: 'center' }}>✏️ تخصيص</h3>
                     <div style={{ marginBottom: 12 }}>
                       <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>اسماء العروسين</label>
                       <input value={customNames} onChange={e => setCustomNames(e.target.value)}
@@ -288,6 +318,50 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
                       <input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)}
                              className="orva-input"
                              style={{ width: '100%', padding: '12px 16px', border: '1.5px solid #d2d2d7', borderRadius: 12, fontSize: 16, background: '#fff' }} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Girly color selector */}
+                {girlyColors && (
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>اللون</label>
+                    <div style={{ display: 'flex', gap: 14, justifyContent: 'center' }}>
+                      {girlyColors.map(col => (
+                        <button key={col.value} type="button" onClick={() => setGirlyColor(col.value)}
+                                style={{
+                                  width: 48, height: 48, borderRadius: '50%',
+                                  border: girlyColor === col.value ? `3px solid #1d1d1f` : `3px solid ${col.value === 'blanc' ? '#d2d2d7' : col.color}`,
+                                  background: col.color,
+                                  boxShadow: girlyColor === col.value ? `0 0 0 3px #fff, 0 0 0 5px ${col.color}` : 'none',
+                                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  transition: 'all .2s',
+                                }}>
+                          {girlyColor === col.value && <span style={{ color: col.value === 'blanc' || col.value === 'jaune' ? '#333' : '#fff', fontSize: 18 }}>✓</span>}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Girly size selector */}
+                {girlySizes && (
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>المقاس</label>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {girlySizes.map(sz => (
+                        <button key={sz} type="button" onClick={() => setGirlySize(sz)}
+                                style={{
+                                  flex: 1, padding: '12px 8px', borderRadius: 14,
+                                  border: girlySize === sz ? `2px solid ${c}` : '2px solid #e8e8ed',
+                                  background: girlySize === sz ? c : '#fff',
+                                  color: girlySize === sz ? '#fff' : '#1d1d1f',
+                                  cursor: 'pointer', fontWeight: 800, fontSize: 14,
+                                  transition: 'all .2s',
+                                }}>
+                          {sz}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -374,7 +448,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
                       <span style={{ fontSize: 16, fontWeight: 900, color: '#1d1d1f' }}>السعر الإجمالي</span>
-                      <span style={{ fontSize: 20, fontWeight: 900, color: '#c2185b' }}>{delivery > 0 ? `${total.toLocaleString()} د.ج` : `${(product.price * qty).toLocaleString()} د.ج`}</span>
+                      <span style={{ fontSize: 20, fontWeight: 900, color: '#3a59d1' }}>{delivery > 0 ? `${total.toLocaleString()} د.ج` : `${(product.price * qty).toLocaleString()} د.ج`}</span>
                     </div>
                   </div>
                 </div>
@@ -404,7 +478,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
       )}
 
       {/* Sticky footer */}
-      {scrolled && (
+      {scrolled && product.stock !== 0 && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '12px 16px', background: '#fff', borderTop: '1px solid #e8e8ed', zIndex: 600, boxShadow: '0 -4px 20px rgba(0,0,0,0.08)' }}>
           <button onClick={() => {
             const allFilled = customer && phone && wilayaId && communeId;
@@ -418,7 +492,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
         </div>
       )}
 
-      <OrderNotification productName={product.name} color={c} />
+      {product.stock !== 0 && <OrderNotification productName={product.name} color={c} />}
     </div>
   );
 }
