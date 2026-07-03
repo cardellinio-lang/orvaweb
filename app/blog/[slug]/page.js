@@ -21,8 +21,14 @@ const posts = {
   },
 };
 
+const slugNfc = s => s.normalize('NFC');
+
+const postsNfc = Object.fromEntries(
+  Object.entries(posts).map(([k, v]) => [slugNfc(k), v])
+);
+
 export default function BlogPost({ params }) {
-  const post = posts[params.slug];
+  const post = postsNfc[slugNfc(params.slug)];
   if (!post) notFound();
 
   const { title, lang, dir, pdf, intro, disclaimer } = post;
