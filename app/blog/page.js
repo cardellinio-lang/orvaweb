@@ -7,31 +7,6 @@ export const metadata = {
 
 const C = '#3a59d1';
 
-const posts = [
-  {
-    slug: 'برنامج-تمارين-منزلية',
-    title: 'برنامج تمارين منزلية',
-    desc: '3 برامج كاملة ب 9 تمارين متنوعة للإحماء، الدوائر، والتمدد — مناسبة لجميع المستويات.',
-  },
-];
-
-function BlogCard({ post }) {
-  return (
-    <Link href={`/blog/${post.slug}`} style={{ textDecoration: 'none' }}>
-      <div style={{
-        background: '#fff', borderRadius: 20, overflow: 'hidden',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
-      }}>
-        <div style={{ padding: '24px' }}>
-          <h2 style={{ fontSize: 20, fontWeight: 900, color: '#1d1d1f', margin: '0 0 8px' }}>{post.title}</h2>
-          <p style={{ fontSize: 14, color: '#6e6e73', lineHeight: 1.6, margin: '0 0 16px' }}>{post.desc}</p>
-          <span style={{ color: C, fontWeight: 800, fontSize: 14 }}>اقرأي المقال ←</span>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
 export default function BlogPage() {
   return (
     <div>
@@ -46,9 +21,20 @@ export default function BlogPage() {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gap: 24, gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
-        {posts.map(post => <BlogCard key={post.slug} post={post} />)}
-      </div>
+      <Link href="/blog/برنامج-تمارين-منزلية" style={{ textDecoration: 'none' }}>
+        <div style={{
+          background: '#fff', borderRadius: 20, overflow: 'hidden',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+        }}>
+          <div style={{ padding: '24px' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 900, color: '#1d1d1f', margin: '0 0 8px' }}>برنامج تمارين منزلية</h2>
+            <p style={{ fontSize: 14, color: '#6e6e73', lineHeight: 1.6, margin: '0 0 16px' }}>
+              3 برامج كاملة ب 9 تمارين متنوعة — للتحميل والمشاهدة بصيغة PDF.
+            </p>
+            <span style={{ color: C, fontWeight: 800, fontSize: 14 }}>اقرأي المقال ←</span>
+          </div>
+        </div>
+      </Link>
 
       <div style={{
         marginTop: 48, background: '#f5f5f7', borderRadius: 24, padding: '40px 32px',
