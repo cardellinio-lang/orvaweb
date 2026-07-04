@@ -14,8 +14,33 @@ export async function GET() {
 
 export async function PATCH(req) {
   const auth = requireAdmin(req); if (auth) return auth;
-  const { id, direction } = await req.json();
-  if (!id || !direction) return Response.json({ error: 'Paramètres manquants' }, { status: 400 });
+  const { id, direction, position } = await req.json();
+  if (!id) return Response.json({ error: 'ID manquant' }, { status: 400 });
+
+  if (position !== undefined) {
+    const all = await prisma.product.findMany({ orderBy: { position: 'asc' } });
+    const idx = all.findIndex(p => p.id === id);
+    if (idx === -1) return Response.json({ error: 'Produit introuvable' }, { status: 404 });
+
+    const target = Math.max(0, Math.min(all.length - 1, position - 1));
+    const currentPos = all[idx].position;
+    const targetPos = all[target].position;
+
+    if (target < idx) {
+      for (const p of all.slice(target, idx)) {
+        await prisma.product.update({ where: { id: p.id }, data: { position: p.position + 1 } });
+      }
+    } else if (target > idx) {
+      for (const p of all.slice(idx + 1, target + 1)) {
+        await prisma.product.update({ where: { id: p.id }, data: { position: p.position - 1 } });
+      }
+    }
+    await prisma.product.update({ where: { id }, data: { position: targetPos } });
+
+    return Response.json({ success: true, products: await prisma.product.findMany({ orderBy: { position: 'asc' } }) });
+  }
+
+  if (!direction) return Response.json({ error: 'Paramètres manquants' }, { status: 400 });
 
   const current = await prisma.product.findUnique({ where: { id } });
   if (!current) return Response.json({ error: 'Produit introuvable' }, { status: 404 });
