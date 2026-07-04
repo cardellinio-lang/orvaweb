@@ -489,6 +489,12 @@ export default function Admin() {
                               <div style={{ fontWeight: 600, color: '#1d1d1f', fontSize: 12 }}>{o.address}</div>
                             </div>
                           )}
+                          {o.customNames && (
+                            <div style={{ gridColumn: '1 / -1' }}>
+                              <span style={{ color: '#8e8e93', fontSize: 11, fontWeight: 600 }}>Personnalisation</span>
+                              <div style={{ fontWeight: 700, color: '#e11d48', fontSize: 13 }}>{o.customNames}</div>
+                            </div>
+                          )}
                         </div>
 
                         <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed #e8e8ed', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px 12px', fontSize: 13 }}>

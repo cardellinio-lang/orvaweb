@@ -144,7 +144,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
             productId: product.id, qty, customer, phone,
             wilayaId: Number(wilayaId), communeId: Number(communeId),
             address: '', deliveryType, pageUrl: window.location.href,
-            customNames: (girlyColor && girlySize) ? `اللون: ${girlyColors.find(c => c.value === girlyColor)?.label || girlyColor} / المقاس: ${girlySize}` : customNames,
+            customNames: girlySize ? (girlyColor ? `اللون: ${girlyColors.find(c => c.value === girlyColor)?.label || girlyColor} / المقاس: ${girlySize}` : `المقاس: ${girlySize}`) : customNames,
             customDate,
           }),
       });
