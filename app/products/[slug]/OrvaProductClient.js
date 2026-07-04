@@ -52,24 +52,25 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
   const [liveCount, setLiveCount] = useState(14 + Math.floor(Math.random() * 6));
 
   const hasColors = product.slug === 'girly-tshirt' || product.slug === 'ensemble-performance-ete';
+  const hasSizes = product.slug === 'girly-tshirt' || product.slug === 'ensemble-performance-ete' || product.slug === 'burkini-orva-ensemble-bain';
   const girlyColors = hasColors ? [
     { label: 'روز', value: 'rose', color: '#e91e8c' },
     { label: 'أصفر', value: 'jaune', color: '#fdd835' },
     { label: 'أبيض', value: 'blanc', color: '#ffffff' },
   ] : null;
-  const girlySizes = (product.slug === 'girly-tshirt' || product.slug === 'ensemble-performance-ete') ? ['S', 'M', 'L', 'XL'] : null;
-  const [itemSelections, setItemSelections] = useState(girlyColors ? [{ color: girlyColors[0].value, size: girlySizes ? girlySizes[1] : null }] : []);
+  const productSizes = product.slug === 'burkini-orva-ensemble-bain' ? ['L', 'XL', 'XXL'] : (hasSizes ? ['S', 'M', 'L', 'XL'] : null);
+  const [itemSelections, setItemSelections] = useState(hasSizes ? [{ color: girlyColors ? girlyColors[0].value : null, size: productSizes ? productSizes[0] : null }] : []);
 
   useEffect(() => {
-    if (!girlyColors) return;
+    if (!hasSizes) return;
     setItemSelections(prev => {
       const newArr = prev.slice(0, qty);
       while (newArr.length < qty) {
-        newArr.push({ color: girlyColors[0].value, size: girlySizes ? girlySizes[1] : null });
+        newArr.push({ color: girlyColors ? girlyColors[0].value : null, size: productSizes ? productSizes[0] : null });
       }
       return newArr;
     });
-  }, [qty, girlyColors, girlySizes]);
+  }, [qty, hasSizes, girlyColors, productSizes]);
 
   const c = product.color || '#3a59d1';
   const t = (typeof product.theme === 'object' && product.theme) ? product.theme : {};
@@ -174,7 +175,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
             wilayaId: Number(wilayaId), communeId: Number(communeId),
             address: '', deliveryType, pageUrl: window.location.href,
             customNames: itemSelections.length > 0 ? itemSelections.map((s, i) =>
-              `القطعة ${i + 1}: ${s.color ? `اللون: ${girlyColors.find(c => c.value === s.color)?.label || s.color}` : ''}${s.size ? `${s.color ? ' / ' : ''}المقاس: ${s.size}` : ''}`
+              `القطعة ${i + 1}: ${girlyColors && s.color ? `اللون: ${girlyColors.find(c => c.value === s.color)?.label || s.color}` : ''}${s.size ? `${girlyColors && s.color ? ' / ' : ''}المقاس: ${s.size}` : ''}`
             ).join(' | ') : customNames,
             customDate,
           }),
@@ -362,34 +363,36 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
                 )}
 
                 {/* Per-item color/size selectors */}
-                {girlyColors && itemSelections.map((item, idx) => (
+                {hasSizes && itemSelections.map((item, idx) => (
                   <div key={idx} style={{ marginBottom: 16, background: idx % 2 === 0 ? '#fafafa' : '#fff', borderRadius: 12, padding: '12px 14px', border: '1px solid #e8e8ed' }}>
                     <label style={{ fontSize: 13, fontWeight: 900, display: 'block', marginBottom: 8, color: '#1d1d1f' }}>القطعة {idx + 1}</label>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       {/* Color */}
-                      <div style={{ display: 'flex', gap: 8, flex: 1 }}>
-                        {girlyColors.map(col => (
-                          <button key={col.value} type="button" onClick={() => {
-                            const next = [...itemSelections];
-                            next[idx] = { ...next[idx], color: col.value };
-                            setItemSelections(next);
-                          }}
-                                  style={{
-                                    width: 36, height: 36, borderRadius: '50%',
-                                    border: item.color === col.value ? `3px solid #1d1d1f` : `3px solid ${col.value === 'blanc' ? '#d2d2d7' : col.color}`,
-                                    background: col.color,
-                                    boxShadow: item.color === col.value ? `0 0 0 2px #fff, 0 0 0 4px ${col.color}` : 'none',
-                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    transition: 'all .2s',
-                                  }}>
-                            {item.color === col.value && <span style={{ color: col.value === 'blanc' || col.value === 'jaune' ? '#333' : '#fff', fontSize: 14 }}>✓</span>}
-                          </button>
-                        ))}
-                      </div>
+                      {girlyColors && (
+                        <div style={{ display: 'flex', gap: 8, flex: 1 }}>
+                          {girlyColors.map(col => (
+                            <button key={col.value} type="button" onClick={() => {
+                              const next = [...itemSelections];
+                              next[idx] = { ...next[idx], color: col.value };
+                              setItemSelections(next);
+                            }}
+                                    style={{
+                                      width: 36, height: 36, borderRadius: '50%',
+                                      border: item.color === col.value ? `3px solid #1d1d1f` : `3px solid ${col.value === 'blanc' ? '#d2d2d7' : col.color}`,
+                                      background: col.color,
+                                      boxShadow: item.color === col.value ? `0 0 0 2px #fff, 0 0 0 4px ${col.color}` : 'none',
+                                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      transition: 'all .2s',
+                                    }}>
+                              {item.color === col.value && <span style={{ color: col.value === 'blanc' || col.value === 'jaune' ? '#333' : '#fff', fontSize: 14 }}>✓</span>}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                       {/* Size */}
-                      {girlySizes && (
-                        <div style={{ display: 'flex', gap: 4 }}>
-                          {girlySizes.map(sz => (
+                      {productSizes && (
+                        <div style={{ display: 'flex', gap: 4, flex: girlyColors ? 'none' : 1, justifyContent: girlyColors ? undefined : 'center' }}>
+                          {productSizes.map(sz => (
                             <button key={sz} type="button" onClick={() => {
                               const next = [...itemSelections];
                               next[idx] = { ...next[idx], size: sz };
