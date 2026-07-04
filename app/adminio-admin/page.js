@@ -379,6 +379,8 @@ export default function Admin() {
                     <td>
                       <div className="flex" style={{ gap: 4 }}>
                         <button className="btn btn-ghost" style={{ padding: '8px 14px' }} onClick={() => { edit(p); setTab('add'); }}>✏️</button>
+                        <button className="btn btn-ghost" style={{ padding: '8px 10px', fontSize: 13 }} onClick={() => moveProduct(p.id, 'up')} disabled={i === 0}>⬆️</button>
+                        <button className="btn btn-ghost" style={{ padding: '8px 10px', fontSize: 13 }} onClick={() => moveProduct(p.id, 'down')} disabled={i === products.length - 1}>⬇️</button>
                         <button className="btn btn-danger" style={{ padding: '8px 14px' }} onClick={() => remove(p.id)}>🗑️</button>
                         <button className="btn btn-ghost" style={{ padding: '8px 14px' }} onClick={() => toggleStatus(p.id, p.active)}>{p.active ? '🙈' : '👀'}</button>
                       </div>
