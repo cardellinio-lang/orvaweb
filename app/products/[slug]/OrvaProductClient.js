@@ -50,8 +50,9 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
   const [loading, setLoading] = useState(false);
   const [liveCount, setLiveCount] = useState(14 + Math.floor(Math.random() * 6));
 
-  const girlyColors = product.slug === 'girly-tshirt' ? [
-    { label: 'روز', value: 'rose', color: '#3a59d1' },
+  const hasColors = product.slug === 'girly-tshirt' || product.slug === 'ensemble-performance-ete';
+  const girlyColors = hasColors ? [
+    { label: 'روز', value: 'rose', color: '#e91e8c' },
     { label: 'أصفر', value: 'jaune', color: '#fdd835' },
     { label: 'أبيض', value: 'blanc', color: '#ffffff' },
   ] : null;
