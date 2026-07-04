@@ -48,6 +48,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
   const [scrolled, setScrolled] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [celebration, setCelebration] = useState(null);
   const [liveCount, setLiveCount] = useState(14 + Math.floor(Math.random() * 6));
 
   const hasColors = product.slug === 'girly-tshirt' || product.slug === 'ensemble-performance-ete';
@@ -57,8 +58,18 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
     { label: 'أبيض', value: 'blanc', color: '#ffffff' },
   ] : null;
   const girlySizes = (product.slug === 'girly-tshirt' || product.slug === 'ensemble-performance-ete') ? ['S', 'M', 'L', 'XL'] : null;
-  const [girlyColor, setGirlyColor] = useState(girlyColors ? girlyColors[0].value : null);
-  const [girlySize, setGirlySize] = useState(girlySizes ? girlySizes[1] : null);
+  const [itemSelections, setItemSelections] = useState(girlyColors ? [{ color: girlyColors[0].value, size: girlySizes ? girlySizes[1] : null }] : []);
+
+  useEffect(() => {
+    if (!girlyColors) return;
+    setItemSelections(prev => {
+      const newArr = prev.slice(0, qty);
+      while (newArr.length < qty) {
+        newArr.push({ color: girlyColors[0].value, size: girlySizes ? girlySizes[1] : null });
+      }
+      return newArr;
+    });
+  }, [qty, girlyColors, girlySizes]);
 
   const c = product.color || '#3a59d1';
   const t = (typeof product.theme === 'object' && product.theme) ? product.theme : {};
@@ -78,6 +89,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
   };
 
   const formRef = useRef(null);
+  const prevTierRef = useRef(false);
   const submittedRef = useRef(false);
 
   const imgs = Array.isArray(product.images) ? product.images : [];
@@ -107,10 +119,15 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
     }
   }, []);
 
+  const basePrice = product.price;
+  const tierActive = product.tierEnabled && product.tierQty && product.tierPrice && qty >= product.tierQty;
+  const effectivePrice = tierActive ? product.tierPrice : basePrice;
+  const finalPrice = effectivePrice;
   const selectedWilaya = wilayas.find(w => w.id === Number(wilayaId));
   const delivery = selectedWilaya ? (deliveryType === 'office' ? selectedWilaya.priceOffice : selectedWilaya.price) : 0;
-  const total = product.price * qty + delivery;
+  const total = finalPrice * qty + delivery;
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
+  const savings = product.tierEnabled && product.tierPrice ? product.price - product.tierPrice : 0;
 
   const filteredCommunes = wilayaId ? communes.filter(c => c.wilayaId === Number(wilayaId)) : [];
 
@@ -129,6 +146,17 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
     }
   }, [phone, product.id]);
 
+  useEffect(() => {
+    if (product.tierEnabled && tierActive && !prevTierRef.current) {
+      prevTierRef.current = true;
+      setCelebration({ savings, tierQty: product.tierQty, tierPrice: product.tierPrice, price: product.price });
+      const timer = setTimeout(() => setCelebration(null), 3500);
+      return () => clearTimeout(timer);
+    } else if (!tierActive) {
+      prevTierRef.current = false;
+    }
+  }, [tierActive, product.tierEnabled, savings, product.tierQty, product.tierPrice, product.price]);
+
   const submitOrder = async () => {
     if (submittedRef.current) return;
     if (!customer || !phone || !wilayaId || !communeId || qty < 1) {
@@ -145,7 +173,9 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
             productId: product.id, qty, customer, phone,
             wilayaId: Number(wilayaId), communeId: Number(communeId),
             address: '', deliveryType, pageUrl: window.location.href,
-            customNames: girlySize ? (girlyColor ? `اللون: ${girlyColors.find(c => c.value === girlyColor)?.label || girlyColor} / المقاس: ${girlySize}` : `المقاس: ${girlySize}`) : customNames,
+            customNames: itemSelections.length > 0 ? itemSelections.map((s, i) =>
+              `القطعة ${i + 1}: ${s.color ? `اللون: ${girlyColors.find(c => c.value === s.color)?.label || s.color}` : ''}${s.size ? `${s.color ? ' / ' : ''}المقاس: ${s.size}` : ''}`
+            ).join(' | ') : customNames,
             customDate,
           }),
       });
@@ -249,12 +279,20 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
                 <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8, lineHeight: 1.3, color: '#1d1d1f' }}>{product.name}</h1>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
                   {product.oldPrice && <span style={{ fontSize: 16, color: '#8e8e93', textDecoration: 'line-through' }}>{product.oldPrice.toLocaleString()} د.ج</span>}
-                  <span style={{ fontSize: 28, fontWeight: 800, color: c }}>
-                    {product.price.toLocaleString()} <span style={{ fontSize: 16 }}>د.ج</span>
+                  <span style={{ fontSize: 28, fontWeight: 800, color: tierActive ? '#16a34a' : c }}>
+                    {finalPrice.toLocaleString()} <span style={{ fontSize: 16 }}>د.ج</span>
                   </span>
+                  {tierActive && product.price !== effectivePrice && (
+                    <span style={{ fontSize: 14, color: '#8e8e93', textDecoration: 'line-through', marginLeft: 8 }}>{product.price.toLocaleString()} د.ج</span>
+                  )}
                 </div>
                 {product.stock === 0 && <span style={{ display: 'inline-block', background: '#ef4444', color: '#fff', fontSize: 12, padding: '4px 14px', borderRadius: 20, fontWeight: 900, marginTop: 8 }}>نفذ من المخزون</span>}
-                {product.stock !== 0 && discount > 0 && <span style={{ display: 'inline-block', background: c, color: '#fff', fontSize: 11, padding: '3px 10px', borderRadius: 20, fontWeight: 800, marginTop: 8 }}>🔥 خصم {discount}%</span>}
+                {discount > 0 && !tierActive && <span style={{ display: 'inline-block', background: c, color: '#fff', fontSize: 11, padding: '3px 10px', borderRadius: 20, fontWeight: 800, marginTop: 8 }}>🔥 خصم {discount}%</span>}
+                {tierActive && savings > 0 && (
+                  <span style={{ display: 'inline-block', background: '#16a34a', color: '#fff', fontSize: 11, padding: '3px 10px', borderRadius: 20, fontWeight: 800, marginTop: 8 }}>
+                    🎉 توفير {savings.toLocaleString()} د.ج للقطعة
+                  </span>
+                )}
               </div>
 
               {product.description && <p style={{ color: '#6e6e73', marginTop: 12, fontSize: 14, lineHeight: 1.6, textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: product.description }} />}
@@ -323,49 +361,56 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
                   </div>
                 )}
 
-                {/* Girly color selector */}
-                {girlyColors && (
-                  <div style={{ marginBottom: 16 }}>
-                    <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>اللون</label>
-                    <div style={{ display: 'flex', gap: 14, justifyContent: 'center' }}>
-                      {girlyColors.map(col => (
-                        <button key={col.value} type="button" onClick={() => setGirlyColor(col.value)}
-                                style={{
-                                  width: 48, height: 48, borderRadius: '50%',
-                                  border: girlyColor === col.value ? `3px solid #1d1d1f` : `3px solid ${col.value === 'blanc' ? '#d2d2d7' : col.color}`,
-                                  background: col.color,
-                                  boxShadow: girlyColor === col.value ? `0 0 0 3px #fff, 0 0 0 5px ${col.color}` : 'none',
-                                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  transition: 'all .2s',
-                                }}>
-                          {girlyColor === col.value && <span style={{ color: col.value === 'blanc' || col.value === 'jaune' ? '#333' : '#fff', fontSize: 18 }}>✓</span>}
-                        </button>
-                      ))}
+                {/* Per-item color/size selectors */}
+                {girlyColors && itemSelections.map((item, idx) => (
+                  <div key={idx} style={{ marginBottom: 16, background: idx % 2 === 0 ? '#fafafa' : '#fff', borderRadius: 12, padding: '12px 14px', border: '1px solid #e8e8ed' }}>
+                    <label style={{ fontSize: 13, fontWeight: 900, display: 'block', marginBottom: 8, color: '#1d1d1f' }}>القطعة {idx + 1}</label>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      {/* Color */}
+                      <div style={{ display: 'flex', gap: 8, flex: 1 }}>
+                        {girlyColors.map(col => (
+                          <button key={col.value} type="button" onClick={() => {
+                            const next = [...itemSelections];
+                            next[idx] = { ...next[idx], color: col.value };
+                            setItemSelections(next);
+                          }}
+                                  style={{
+                                    width: 36, height: 36, borderRadius: '50%',
+                                    border: item.color === col.value ? `3px solid #1d1d1f` : `3px solid ${col.value === 'blanc' ? '#d2d2d7' : col.color}`,
+                                    background: col.color,
+                                    boxShadow: item.color === col.value ? `0 0 0 2px #fff, 0 0 0 4px ${col.color}` : 'none',
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    transition: 'all .2s',
+                                  }}>
+                            {item.color === col.value && <span style={{ color: col.value === 'blanc' || col.value === 'jaune' ? '#333' : '#fff', fontSize: 14 }}>✓</span>}
+                          </button>
+                        ))}
+                      </div>
+                      {/* Size */}
+                      {girlySizes && (
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          {girlySizes.map(sz => (
+                            <button key={sz} type="button" onClick={() => {
+                              const next = [...itemSelections];
+                              next[idx] = { ...next[idx], size: sz };
+                              setItemSelections(next);
+                            }}
+                                    style={{
+                                      padding: '8px 12px', borderRadius: 10,
+                                      border: item.size === sz ? `2px solid ${c}` : '2px solid #d2d2d7',
+                                      background: item.size === sz ? c : '#fff',
+                                      color: item.size === sz ? '#fff' : '#1d1d1f',
+                                      cursor: 'pointer', fontWeight: 800, fontSize: 13,
+                                      transition: 'all .2s', minWidth: 36, textAlign: 'center',
+                                    }}>
+                              {sz}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
-                )}
-
-                {/* Girly size selector */}
-                {girlySizes && (
-                  <div style={{ marginBottom: 16 }}>
-                    <label style={{ fontSize: 14, fontWeight: 800, display: 'block', marginBottom: 6, color: '#1d1d1f' }}>المقاس</label>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      {girlySizes.map(sz => (
-                        <button key={sz} type="button" onClick={() => setGirlySize(sz)}
-                                style={{
-                                  flex: 1, padding: '12px 8px', borderRadius: 14,
-                                  border: girlySize === sz ? `2px solid ${c}` : '2px solid #e8e8ed',
-                                  background: girlySize === sz ? c : '#fff',
-                                  color: girlySize === sz ? '#fff' : '#1d1d1f',
-                                  cursor: 'pointer', fontWeight: 800, fontSize: 14,
-                                  transition: 'all .2s',
-                                }}>
-                          {sz}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                ))}
 
                 {/* Wilaya */}
                 <div style={{ marginBottom: 16 }}>
@@ -402,9 +447,17 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
                             style={{ width: 44, height: 44, borderRadius: 12, border: '1.5px solid #d2d2d7', background: '#fff', fontSize: 22, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: btnBg }}>
                       +
                     </button>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: c }}>× {product.price.toLocaleString()} د.ج</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: tierActive ? '#16a34a' : c }}>× {finalPrice.toLocaleString()} د.ج</div>
                   </div>
                 </div>
+
+                {product.tierEnabled && product.tierQty && qty < product.tierQty && (
+                  <div style={{ marginTop: 8, background: '#f0fdf4', borderRadius: 12, padding: '10px 14px', border: '1px dashed #22c55e' }}>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: '#16a34a' }}>
+                      {(product.tierMessage || `➕ أضف {remaining} فقط ووفر ${savings.toLocaleString()} د.ج لكل قطعة!`).replace(/\{remaining\}/g, product.tierQty - qty)}
+                    </span>
+                  </div>
+                )}
 
                 {/* Delivery type */}
                 <div style={{ marginBottom: 16 }}>
@@ -437,7 +490,10 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px dashed #d2d2d7' }}>
                       <span style={{ fontSize: 14, fontWeight: 700, color: '#1d1d1f' }}>سعر المنتج</span>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: '#6e6e73' }}>{product.price.toLocaleString()} د.ج</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: tierActive ? '#16a34a' : '#6e6e73' }}>
+                        {tierActive && <span style={{ fontSize: 12, color: '#8e8e93', textDecoration: 'line-through', marginLeft: 6 }}>{product.price.toLocaleString()}</span>}
+                        {finalPrice.toLocaleString()} د.ج
+                      </span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px dashed #d2d2d7' }}>
                       <span style={{ fontSize: 14, fontWeight: 700, color: '#1d1d1f' }}>الكمية</span>
@@ -449,7 +505,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
                       <span style={{ fontSize: 16, fontWeight: 900, color: '#1d1d1f' }}>السعر الإجمالي</span>
-                      <span style={{ fontSize: 20, fontWeight: 900, color: '#3a59d1' }}>{delivery > 0 ? `${total.toLocaleString()} د.ج` : `${(product.price * qty).toLocaleString()} د.ج`}</span>
+                      <span style={{ fontSize: 20, fontWeight: 900, color: '#3a59d1' }}>{delivery > 0 ? `${total.toLocaleString()} د.ج` : `${(finalPrice * qty).toLocaleString()} د.ج`}</span>
                     </div>
                   </div>
                 </div>
@@ -494,6 +550,136 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
       )}
 
       {product.stock !== 0 && <OrderNotification productName={product.name} color={c} />}
+      {celebration && <CelebrationOverlay data={celebration} onClose={() => setCelebration(null)} />}
+    </div>
+  );
+}
+
+function CelebrationOverlay({ data, onClose }) {
+  const canvasRef = useRef(null);
+  const isPack = !!data.title;
+  const savingAmt = isPack ? data.savings : data.price - data.tierPrice;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    canvas.width = parent.offsetWidth;
+    canvas.height = parent.offsetHeight;
+
+    const colors = ['#ff6b35','#ffaa00','#ffd700','#ff3b6f','#a855f7','#22c55e','#f50','#48dbfb'];
+    let pieces = [];
+
+    for (let i = 0; i < 100; i++) {
+      pieces.push({
+        x: Math.random() * canvas.width, y: -10 - Math.random() * 60,
+        w: 4 + Math.random() * 8, h: 4 + Math.random() * 8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 5, vy: 2 + Math.random() * 4,
+        rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10,
+        gravity: 0.06 + Math.random() * 0.04, opacity: 1,
+      });
+    }
+
+    const ctx2d = canvas.getContext('2d');
+    let animId;
+    function draw() {
+      ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+      pieces = pieces.filter(p => {
+        p.x += p.vx; p.vy += p.gravity; p.y += p.vy;
+        p.rot += p.rotV; p.opacity -= 0.004;
+        ctx2d.save();
+        ctx2d.translate(p.x, p.y);
+        ctx2d.rotate((p.rot * Math.PI) / 180);
+        ctx2d.globalAlpha = Math.max(0, p.opacity);
+        ctx2d.fillStyle = p.color;
+        ctx2d.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx2d.restore();
+        return p.opacity > 0 && p.y < canvas.height + 20;
+      });
+      if (pieces.length > 0) animId = requestAnimationFrame(draw);
+    }
+    draw();
+    return () => { if (animId) cancelAnimationFrame(animId); };
+  }, []);
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      cursor: 'pointer',
+    }}>
+      <style>{`
+        @keyframes wowBadgePop {
+          0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+          60% { transform: scale(1.18) rotate(3deg); opacity: 1; }
+          80% { transform: scale(0.95) rotate(-2deg); }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes wowFloatUp {
+          0% { opacity: 0; transform: translateY(30px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes wowShimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+      `}</style>
+
+      <canvas ref={canvasRef} style={{
+        position: 'absolute', inset: 0, width: '100%', height: '100%',
+        pointerEvents: 'none', zIndex: 1,
+      }} />
+
+      <div onClick={e => e.stopPropagation()} style={{
+        position: 'relative', zIndex: 3, textAlign: 'center',
+        animation: 'wowBadgePop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+      }}>
+        <div style={{
+          display: 'inline-block',
+          background: 'linear-gradient(135deg, #ff6b35, #f50)',
+          color: '#fff', borderRadius: 100, padding: '20px 40px',
+          boxShadow: '0 8px 40px rgba(255,85,0,0.5)', marginBottom: 16,
+        }}>
+          <div style={{
+            fontSize: 24, fontWeight: 900, lineHeight: 1.2,
+            background: 'linear-gradient(90deg, #ffd700, #fff, #ffd700)',
+            backgroundSize: '200% auto',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            animation: 'wowShimmer 1.5s linear infinite',
+          }}>
+            {isPack ? data.title : '🎉 تم فتح العرض!'}
+          </div>
+          {!isPack && (
+            <div style={{ fontSize: 16, fontWeight: 700, opacity: 0.9, marginTop: 4 }}>
+              {data.tierQty}+ بكمية
+            </div>
+          )}
+        </div>
+
+        <div style={{ animation: 'wowFloatUp 0.5s ease-out 0.3s both' }}>
+          <div style={{ color: '#ffd700', fontSize: 36, fontWeight: 900, marginBottom: 4 }}>
+            {data.tierPrice.toLocaleString()} <span style={{ fontSize: 18 }}>د.ج</span>
+            <span style={{ fontSize: 18, color: '#aaa', textDecoration: 'line-through', marginLeft: 10, fontWeight: 600 }}>
+              {data.price.toLocaleString()} د.ج
+            </span>
+          </div>
+          <div style={{ color: '#86efac', fontSize: 18, fontWeight: 700 }}>
+            وفر {savingAmt.toLocaleString()} د.ج
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <span style={{
+              display: 'inline-block', background: 'rgba(255,255,255,0.15)',
+              color: '#fff', padding: '8px 24px', borderRadius: 999,
+              fontSize: 14, fontWeight: 700, backdropFilter: 'blur(4px)',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}>
+              ✅ تم تخفيض السعر
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
