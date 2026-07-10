@@ -51,14 +51,21 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
   const [celebration, setCelebration] = useState(null);
   const [liveCount, setLiveCount] = useState(14 + Math.floor(Math.random() * 6));
 
-  const hasColors = product.slug === 'girly-tshirt' || product.slug === 'ensemble-performance-ete';
-  const hasSizes = product.slug === 'girly-tshirt' || product.slug === 'ensemble-performance-ete' || product.slug === 'burkini-orva-ensemble-bain';
-  const girlyColors = hasColors ? [
-    { label: 'روز', value: 'rose', color: '#e91e8c' },
-    { label: 'أصفر', value: 'jaune', color: '#fdd835' },
-    { label: 'أبيض', value: 'blanc', color: '#ffffff' },
-  ] : null;
-  const productSizes = product.slug === 'burkini-orva-ensemble-bain' ? ['L', 'XL', 'XXL'] : (hasSizes ? ['S', 'M', 'L', 'XL'] : null);
+  const hasColors = ['girly-tshirt', 'ensemble-performance-ete', 'bbl-brule-graisse'].includes(product.slug);
+  const hasSizes = ['girly-tshirt', 'ensemble-performance-ete', 'burkini-orva-ensemble-bain', 'bbl-brule-graisse'].includes(product.slug);
+  const colorMap = {
+    'girly-tshirt': [{ label: 'روز', value: 'rose', color: '#e91e8c' }, { label: 'أصفر', value: 'jaune', color: '#fdd835' }, { label: 'أبيض', value: 'blanc', color: '#ffffff' }],
+    'ensemble-performance-ete': [{ label: 'روز', value: 'rose', color: '#e91e8c' }, { label: 'أصفر', value: 'jaune', color: '#fdd835' }, { label: 'أبيض', value: 'blanc', color: '#ffffff' }],
+    'bbl-brule-graisse': [{ label: 'روز', value: 'rose', color: '#e91e8c' }, { label: 'أسود', value: 'noir', color: '#000000' }, { label: 'أبيض', value: 'blanc', color: '#ffffff' }],
+  };
+  const girlyColors = hasColors ? (colorMap[product.slug] || null) : null;
+  const sizeMap = {
+    'girly-tshirt': ['S', 'M', 'L', 'XL'],
+    'ensemble-performance-ete': ['S', 'M', 'L', 'XL'],
+    'burkini-orva-ensemble-bain': ['L', 'XL', 'XXL'],
+    'bbl-brule-graisse': ['M', 'L', 'XL', 'XXL'],
+  };
+  const productSizes = hasSizes ? (sizeMap[product.slug] || null) : null;
   const [itemSelections, setItemSelections] = useState(hasSizes ? [{ color: girlyColors ? girlyColors[0].value : null, size: productSizes ? productSizes[0] : null }] : []);
 
   useEffect(() => {
