@@ -3,8 +3,12 @@ import prisma from '@/lib/db';
 import { sendAdminNotification } from '@/lib/telegram';
 import { sendCapiEvents } from '@/lib/facebook-capi';
 import { waitUntil } from '@vercel/functions';
+import { requireAdmin } from '@/lib/admin-auth';
 
-export async function GET() {
+export async function GET(req) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
+
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: 'desc' }, include: { items: true },
   });
