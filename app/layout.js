@@ -4,7 +4,13 @@ import prisma from '@/lib/db';
 export const metadata = {
   title: 'Orva Sport Femme',
   description: 'Orva Sport Femme — équipement sportif pour femmes',
-  icons: { icon: '/fav2.png' },
+  icons: {
+    icon: [
+      { url: '/fav-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/fav-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [{ url: '/fav-180.png', sizes: '180x180', type: 'image/png' }],
+  },
 };
 
 export default async function RootLayout({ children }) {
