@@ -18,8 +18,11 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
       <head>
-        <link rel="icon" href="/fav2.png" sizes="48x48" />
-        <link rel="shortcut icon" href="/fav2.png" sizes="48x48" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/fav-16.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/fav-32.png" />
+        <link rel="icon" type="image/png" sizes="48x48" href="/fav-48.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/fav-180.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/fav-192.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Montserrat:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
