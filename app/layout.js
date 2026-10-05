@@ -50,7 +50,7 @@ export default async function RootLayout({ children }) {
               <a href="/" style={{ fontWeight: 800, fontSize: 18, color: '#1d1d1f', textDecoration: 'none' }}>المنتجات</a>
               {blogVisible && <a href="/blog" style={{ fontWeight: 700, fontSize: 16, color: '#3a59d1', textDecoration: 'none' }}>المدونة</a>}
             </div>
-            <a href="/"><img src="/orva2.png" alt="Orva Sport Femme" style={{ height: 44 }} /></a>
+            <a href="/"><img src="/orva-bw.png" alt="Orva Sport Femme" style={{ height: 44 }} /></a>
           </div>
 
         </div>
