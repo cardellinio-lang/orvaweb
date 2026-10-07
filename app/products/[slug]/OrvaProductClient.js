@@ -52,7 +52,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
   const [liveCount, setLiveCount] = useState(14 + Math.floor(Math.random() * 6));
 
   const hasColors = ['girly-tshirt', 'ensemble-performance-ete', 'bbl-brule-graisse'].includes(product.slug);
-  const hasSizes = ['girly-tshirt', 'ensemble-performance-ete', 'burkini-orva-ensemble-bain', 'bbl-brule-graisse'].includes(product.slug);
+  const hasSizes = ['girly-tshirt', 'ensemble-performance-ete', 'burkini-orva-ensemble-bain', 'bbl-brule-graisse', 'vst-brwn'].includes(product.slug);
   const colorMap = {
     'girly-tshirt': [{ label: 'روز', value: 'rose', color: '#e91e8c' }, { label: 'أصفر', value: 'jaune', color: '#fdd835' }, { label: 'أبيض', value: 'blanc', color: '#ffffff' }],
     'ensemble-performance-ete': [{ label: 'روز', value: 'rose', color: '#e91e8c' }, { label: 'أصفر', value: 'jaune', color: '#fdd835' }, { label: 'أبيض', value: 'blanc', color: '#ffffff' }],
@@ -64,6 +64,7 @@ export default function OrvaProductClient({ product, wilayas, communes }) {
     'ensemble-performance-ete': ['S', 'M', 'L', 'XL'],
     'burkini-orva-ensemble-bain': ['L', 'XL', 'XXL'],
     'bbl-brule-graisse': ['M', 'L', 'XL', 'XXL'],
+    'vst-brwn': ['S', 'M', 'L', 'XL'],
   };
   const productSizes = hasSizes ? (sizeMap[product.slug] || null) : null;
   const [itemSelections, setItemSelections] = useState(hasSizes ? [{ color: girlyColors ? girlyColors[0].value : null, size: productSizes ? productSizes[0] : null }] : []);
